@@ -1,0 +1,137 @@
+# =============================================================================
+# n8n Integration Hub Backend Deployment
+# =============================================================================
+# Backend API service for n8n Integration Hub module
+# =============================================================================
+
+---
+# Deployment: n8n Integration Hub Backend Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-nkz-backend
+  namespace: nekazari
+  labels:
+    app: n8n-nkz-backend
+    component: backend
+    module: n8n-nkz
+    nekazari.io/profile: addon
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: n8n-nkz-backend
+  template:
+    metadata:
+      labels:
+        app: n8n-nkz-backend
+        component: backend
+        module: n8n-nkz
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: backend
+          image: ghcr.io/k8-benetis/n8n-module-nkz/n8n-nkz-backend:main
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: APP_NAME
+              value: "n8n Integration Hub"
+            - name: DEBUG
+              value: "false"
+            - name: API_PREFIX
+              value: "/api/n8n-nkz"
+            # Keycloak Configuration
+            - name: KEYCLOAK_URL
+              value: "https://auth.artotxiki.com/auth"
+            - name: KEYCLOAK_REALM
+              value: "nekazari"
+            - name: JWT_AUDIENCE
+              value: "account"
+            # n8n Configuration
+            - name: N8N_URL
+              value: "http://n8n-service:5678"
+            - name: N8N_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secret
+                  key: api-key
+                  optional: true
+            # Intelligence Module
+            - name: INTELLIGENCE_URL
+              value: "http://intelligence-api-service:8000"
+            - name: INTELLIGENCE_API_PREFIX
+              value: "/api/intelligence"
+            # NDVI Worker
+            - name: NDVI_WORKER_URL
+              value: "http://ndvi-worker-service:8000"
+            # Email Service
+            - name: EMAIL_SERVICE_URL
+              value: "http://email-service:8000"
+            # ROS2 Bridge
+            - name: ROS2_BRIDGE_URL
+              value: "http://ros2-fiware-bridge-service:8000"
+            # Orion-LD
+            - name: ORION_URL
+              value: "http://orion-ld-service:1026"
+            - name: CONTEXT_URL
+              value: "https://nekazari.artotxiki.com/ngsi-ld-context.json"
+            # Redis
+            - name: REDIS_HOST
+              value: "redis-service"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
+                  optional: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+
+---
+# Service: n8n Integration Hub Backend API
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-nkz-api-service
+  namespace: nekazari
+  labels:
+    app: n8n-nkz-backend
+    module: n8n-nkz
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: n8n-nkz-backend

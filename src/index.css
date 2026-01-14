@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* n8n Integration Hub custom styles */
+.n8n-gradient {
+  background: linear-gradient(135deg, #FF6D00 0%, #FF9800 100%);
+}
+
+.n8n-card-hover {
+  @apply transition-all duration-200 hover:shadow-lg hover:border-orange-200;
+}
+
+/* Status indicators */
+.status-dot {
+  @apply w-2 h-2 rounded-full;
+}
+
+.status-dot-success {
+  @apply bg-green-500;
+}
+
+.status-dot-warning {
+  @apply bg-yellow-500;
+}
+
+.status-dot-error {
+  @apply bg-red-500;
+}
+
+.status-dot-pending {
+  @apply bg-gray-400 animate-pulse;
+}
+
+/* Integration cards */
+.integration-card {
+  @apply p-4 rounded-lg border border-gray-200 bg-white hover:border-orange-300 transition-colors;
+}
+
+.integration-card-active {
+  @apply border-green-300 bg-green-50;
+}
+
+.integration-card-error {
+  @apply border-red-300 bg-red-50;
+}
