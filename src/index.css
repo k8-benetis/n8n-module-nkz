@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* n8n Integration Hub - Custom Styles
+   
+   NOTE: Do NOT include @tailwind directives here. The host application
+   already includes Tailwind CSS. Including them here would reset global
+   styles and break the host's layout.
+*/
 
 /* n8n Integration Hub custom styles */
 .n8n-gradient {
