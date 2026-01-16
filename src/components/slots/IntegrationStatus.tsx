@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  RefreshCw
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 
 interface IntegrationStatusProps {
@@ -143,9 +144,20 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
             }}
             className="p-0.5 text-slate-400 hover:text-slate-600"
             disabled={loading}
+            title="Refresh status"
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           </button>
+          <a
+            href="https://n8n.nekazari.artotxiki.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="p-0.5 text-orange-500 hover:text-orange-600"
+            title="Open n8n"
+          >
+            <ExternalLink className="w-3 h-3" />
+          </a>
         </div>
       </div>
 

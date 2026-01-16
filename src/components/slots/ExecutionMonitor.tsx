@@ -18,7 +18,8 @@ import {
   AlertCircle,
   Filter,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ExternalLink
 } from 'lucide-react';
 
 interface ExecutionMonitorProps {
@@ -230,9 +231,21 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
           <button
             onClick={() => setExpanded(!expanded)}
             className="p-1 text-slate-400 hover:text-slate-600"
+            title={expanded ? 'Collapse' : 'Expand'}
           >
             {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
+          
+          {/* Open n8n */}
+          <a
+            href="https://n8n.nekazari.artotxiki.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1 text-orange-500 hover:text-orange-600"
+            title="Open n8n"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </a>
         </div>
       </div>
 
