@@ -1,0 +1,53 @@
+{
+  "app": {
+    "title": "n8n Integration Hub",
+    "subtitle": "Workflow orchestration for Nekazari",
+    "standaloneMode": "Standalone mode",
+    "refresh": "Refresh",
+    "openN8n": "Open n8n"
+  },
+  "dashboard": {
+    "activeIntegrations": "Active integrations",
+    "activeWorkflows": "Active workflows",
+    "totalExecutions": "Total executions",
+    "successfulToday": "Successful today",
+    "serviceIntegrationsTitle": "Service integrations",
+    "serviceIntegrationsSubtitle": "Connected platform services"
+  },
+  "common": {
+    "loginRequired": "Login required",
+    "selectEntityToSeeWorkflows": "Select an entity to see workflows",
+    "entity": "Entity",
+    "type": "Type",
+    "unknown": "Unknown"
+  },
+  "workflows": {
+    "title": "n8n Workflows",
+    "noActiveForEntityType": "No active workflows for this entity type.",
+    "executeWorkflow": "Execute workflow",
+    "failedToLoad": "Failed to load workflows",
+    "failedToExecute": "Failed to execute workflow"
+  },
+  "integrations": {
+    "hubLabel": "n8n Hub",
+    "refreshStatus": "Refresh status",
+    "open": "Open n8n"
+  },
+  "executions": {
+    "title": "Executions",
+    "running": "{{count}} running",
+    "errors": "{{count}} errors",
+    "filter": {
+      "all": "All",
+      "success": "Success",
+      "error": "Error",
+      "running": "Running"
+    },
+    "autoRefreshOn": "Auto-refresh ON",
+    "autoRefreshOff": "Auto-refresh OFF",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "noExecutionsFound": "No executions found",
+    "failedToLoad": "Failed to load executions"
+  }
+}

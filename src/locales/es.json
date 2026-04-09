@@ -1,0 +1,53 @@
+{
+  "app": {
+    "title": "Hub de Integración n8n",
+    "subtitle": "Orquestación de workflows para Nekazari",
+    "standaloneMode": "Modo standalone",
+    "refresh": "Actualizar",
+    "openN8n": "Abrir n8n"
+  },
+  "dashboard": {
+    "activeIntegrations": "Integraciones activas",
+    "activeWorkflows": "Workflows activos",
+    "totalExecutions": "Ejecuciones totales",
+    "successfulToday": "Correctas hoy",
+    "serviceIntegrationsTitle": "Integraciones de servicios",
+    "serviceIntegrationsSubtitle": "Servicios de plataforma conectados"
+  },
+  "common": {
+    "loginRequired": "Inicio de sesión requerido",
+    "selectEntityToSeeWorkflows": "Selecciona una entidad para ver workflows",
+    "entity": "Entidad",
+    "type": "Tipo",
+    "unknown": "Desconocido"
+  },
+  "workflows": {
+    "title": "Workflows de n8n",
+    "noActiveForEntityType": "No hay workflows activos para este tipo de entidad.",
+    "executeWorkflow": "Ejecutar workflow",
+    "failedToLoad": "No se han podido cargar los workflows",
+    "failedToExecute": "No se ha podido ejecutar el workflow"
+  },
+  "integrations": {
+    "hubLabel": "Hub n8n",
+    "refreshStatus": "Actualizar estado",
+    "open": "Abrir n8n"
+  },
+  "executions": {
+    "title": "Ejecuciones",
+    "running": "{{count}} en ejecución",
+    "errors": "{{count}} errores",
+    "filter": {
+      "all": "Todas",
+      "success": "Correctas",
+      "error": "Error",
+      "running": "En ejecución"
+    },
+    "autoRefreshOn": "Auto-actualización ACTIVADA",
+    "autoRefreshOff": "Auto-actualización DESACTIVADA",
+    "collapse": "Contraer",
+    "expand": "Expandir",
+    "noExecutionsFound": "No se han encontrado ejecuciones",
+    "failedToLoad": "No se han podido cargar las ejecuciones"
+  }
+}

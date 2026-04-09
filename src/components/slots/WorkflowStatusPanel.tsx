@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useViewer, useAuth } from '@nekazari/sdk';
+import { useTranslation } from '@nekazari/sdk';
 import { useUIKit } from '@/hooks/useUIKit';
 import { useModuleApi } from '@/services/api';
 import { 
@@ -40,6 +41,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
   const { Card, Button } = useUIKit();
   const { selectedEntityId, selectedEntityType } = useViewer();
   const { isAuthenticated, hasRole } = useAuth();
+  const { t } = useTranslation('n8n');
   const api = useModuleApi();
 
   const [workflows, setWorkflows] = useState<WorkflowSummary[]>([]);
@@ -66,7 +68,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
         setWorkflows(summaries);
       } catch (err: any) {
         console.error('[WorkflowStatusPanel] Error:', err);
-        setError(err.message || 'Failed to load workflows');
+        setError(err.message || t('workflows.failedToLoad'));
       } finally {
         setLoading(false);
       }
@@ -94,7 +96,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
       })) || []);
       setLoading(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to execute workflow');
+      setError(err.message || t('workflows.failedToExecute'));
     }
   };
 
@@ -112,7 +114,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
       <Card padding="md" className={className}>
         <div className="flex items-center gap-2 text-amber-600">
           <AlertCircle className="w-5 h-5" />
-          <span className="text-sm">Login required</span>
+          <span className="text-sm">{t('common.loginRequired')}</span>
         </div>
       </Card>
     );
@@ -123,7 +125,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
       <Card padding="md" className={className}>
         <div className="flex items-center gap-2 text-gray-500">
           <Workflow className="w-5 h-5" />
-          <span className="text-sm">Select an entity to see workflows</span>
+          <span className="text-sm">{t('common.selectEntityToSeeWorkflows')}</span>
         </div>
       </Card>
     );
@@ -141,31 +143,31 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
               <Workflow className="w-4 h-4 text-orange-600" />
             </div>
             <h3 className="text-sm font-semibold text-slate-800">
-              n8n Workflows
+              {t('workflows.title')}
             </h3>
           </div>
           <a
-            href="https://n8n.nekazari.artotxiki.com"
+            href="https://n8n.robotika.cloud"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-orange-600 hover:text-orange-700 flex items-center gap-1"
           >
             <ExternalLink className="w-3 h-3" />
-            Open n8n
+            {t('app.openN8n')}
           </a>
         </div>
 
         {/* Entity Context */}
         <div className="text-xs bg-slate-50 rounded p-2">
           <div className="flex justify-between">
-            <span className="text-slate-500">Entity:</span>
+            <span className="text-slate-500">{t('common.entity')}:</span>
             <span className="text-slate-700 font-mono truncate max-w-[150px]">
               {selectedEntityId}
             </span>
           </div>
           <div className="flex justify-between mt-1">
-            <span className="text-slate-500">Type:</span>
-            <span className="text-slate-700">{selectedEntityType || 'Unknown'}</span>
+            <span className="text-slate-500">{t('common.type')}:</span>
+            <span className="text-slate-700">{selectedEntityType || t('common.unknown')}</span>
           </div>
         </div>
 
@@ -187,7 +189,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
         {/* Workflows List */}
         {!loading && relatedWorkflows.length === 0 && (
           <div className="text-sm text-slate-500 text-center py-4">
-            No active workflows for this entity type.
+            {t('workflows.noActiveForEntityType')}
           </div>
         )}
 
@@ -210,7 +212,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
                     size="sm"
                     onClick={() => executeWorkflow(workflow.id)}
                     className="p-1 flex-shrink-0"
-                    title="Execute workflow"
+                    title={t('workflows.executeWorkflow')}
                   >
                     <Zap className="w-4 h-4 text-orange-500" />
                   </Button>

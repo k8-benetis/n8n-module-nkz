@@ -87,7 +87,7 @@
     ],
     "slots": {
       "layer-toggle": [],
-      "context-panel": ["WorkflowStatusPanel"],
+      "context-panel": ["WorkflowStatusPanel", "WebhookConfigPanel", "NotificationsPanel"],
       "bottom-panel": ["ExecutionMonitor"],
       "entity-tree": []
     }

@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
+import { useTranslation } from '@nekazari/sdk';
 import { useUIKit } from '@/hooks/useUIKit';
 import { useModuleApi } from '@/services/api';
 import { 
@@ -39,6 +40,7 @@ interface ExecutionItem {
 export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className }) => {
   const { Card } = useUIKit();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation('n8n');
   const api = useModuleApi();
 
   const [executions, setExecutions] = useState<ExecutionItem[]>([]);
@@ -113,7 +115,7 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
       setError(null);
     } catch (err: any) {
       console.error('[ExecutionMonitor] Error:', err);
-      setError(err.message || 'Failed to load executions');
+      setError(err.message || t('executions.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -166,7 +168,7 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
       <Card padding="sm" className={className}>
         <div className="flex items-center gap-2 text-amber-600">
           <AlertCircle className="w-4 h-4" />
-          <span className="text-xs">Login required</span>
+          <span className="text-xs">{t('common.loginRequired')}</span>
         </div>
       </Card>
     );
@@ -182,7 +184,7 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-semibold text-slate-800">Executions</span>
+            <span className="text-sm font-semibold text-slate-800">{t('executions.title')}</span>
           </div>
           
           {/* Status Summary */}
@@ -190,13 +192,13 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
             {runningCount > 0 && (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
                 <RefreshCw className="w-3 h-3 animate-spin" />
-                {runningCount} running
+                {t('executions.running', { count: runningCount })}
               </span>
             )}
             {errorCount > 0 && (
               <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
                 <XCircle className="w-3 h-3" />
-                {errorCount} errors
+                {t('executions.errors', { count: errorCount })}
               </span>
             )}
           </div>
@@ -211,10 +213,10 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
               onChange={(e) => setFilter(e.target.value)}
               className="text-xs border-0 bg-transparent text-slate-600 focus:outline-none cursor-pointer"
             >
-              <option value="all">All</option>
-              <option value="success">Success</option>
-              <option value="error">Error</option>
-              <option value="running">Running</option>
+              <option value="all">{t('executions.filter.all')}</option>
+              <option value="success">{t('executions.filter.success')}</option>
+              <option value="error">{t('executions.filter.error')}</option>
+              <option value="running">{t('executions.filter.running')}</option>
             </select>
           </div>
 
@@ -222,7 +224,7 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
             className={`p-1 rounded ${autoRefresh ? 'text-green-600' : 'text-slate-400'}`}
-            title={autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
+            title={autoRefresh ? t('executions.autoRefreshOn') : t('executions.autoRefreshOff')}
           >
             <RefreshCw className={`w-3 h-3 ${autoRefresh ? 'animate-spin' : ''}`} />
           </button>
@@ -231,18 +233,18 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
           <button
             onClick={() => setExpanded(!expanded)}
             className="p-1 text-slate-400 hover:text-slate-600"
-            title={expanded ? 'Collapse' : 'Expand'}
+            title={expanded ? t('executions.collapse') : t('executions.expand')}
           >
             {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
           
           {/* Open n8n */}
           <a
-            href="https://n8n.nekazari.artotxiki.com"
+            href="https://n8n.robotika.cloud"
             target="_blank"
             rel="noopener noreferrer"
             className="p-1 text-orange-500 hover:text-orange-600"
-            title="Open n8n"
+            title={t('app.openN8n')}
           >
             <ExternalLink className="w-4 h-4" />
           </a>
@@ -265,7 +267,7 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
           </div>
         ) : executions.length === 0 ? (
           <div className="text-xs text-slate-500 text-center py-4">
-            No executions found
+            {t('executions.noExecutionsFound')}
           </div>
         ) : (
           <div className="flex gap-2 pb-2">

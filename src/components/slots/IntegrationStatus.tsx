@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
+import { useTranslation } from '@nekazari/sdk';
 import { useUIKit } from '@/hooks/useUIKit';
 import { useModuleApi } from '@/services/api';
 import { 
@@ -38,6 +39,7 @@ interface Integration {
 export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className }) => {
   const { Card } = useUIKit();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation('n8n');
   const api = useModuleApi();
 
   const [integrations, setIntegrations] = useState<Integration[]>([
@@ -118,7 +120,7 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
           <div className="p-1 rounded bg-orange-100">
             <Workflow className="w-3 h-3 text-orange-600" />
           </div>
-          <span className="text-xs font-medium text-slate-700">n8n Hub</span>
+          <span className="text-xs font-medium text-slate-700">{t('integrations.hubLabel')}</span>
         </div>
         
         <div className="flex items-center gap-2">
@@ -144,17 +146,17 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
             }}
             className="p-0.5 text-slate-400 hover:text-slate-600"
             disabled={loading}
-            title="Refresh status"
+            title={t('integrations.refreshStatus')}
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <a
-            href="https://n8n.nekazari.artotxiki.com"
+            href="https://n8n.robotika.cloud"
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
             className="p-0.5 text-orange-500 hover:text-orange-600"
-            title="Open n8n"
+            title={t('integrations.open')}
           >
             <ExternalLink className="w-3 h-3" />
           </a>

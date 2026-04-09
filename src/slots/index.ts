@@ -10,6 +10,8 @@ import React from 'react';
 import { WorkflowStatusPanel } from '../components/slots/WorkflowStatusPanel';
 import { ExecutionMonitor } from '../components/slots/ExecutionMonitor';
 import { IntegrationStatus } from '../components/slots/IntegrationStatus';
+import { WebhookConfigPanel } from '../components/slots/WebhookConfigPanel';
+import { NotificationsPanel } from '../components/slots/NotificationsPanel';
 
 // Module identifier - used for all slot widgets
 const MODULE_ID = 'n8n-nkz';
@@ -71,6 +73,22 @@ export const moduleSlots: ModuleViewerSlots = {
       showWhen: {
         entityType: ['AgriParcel', 'Building', 'Device', 'Robot']
       }
+    },
+    // Webhook Configuration Panel
+    {
+      id: 'n8n-nkz-webhook-config',
+      moduleId: MODULE_ID,
+      component: 'WebhookConfigPanel',
+      priority: 50,
+      localComponent: WebhookConfigPanel,
+    },
+    // Notifications Configuration Panel
+    {
+      id: 'n8n-nkz-notifications-config',
+      moduleId: MODULE_ID,
+      component: 'NotificationsPanel',
+      priority: 45,
+      localComponent: NotificationsPanel,
     }
   ],
   'bottom-panel': [

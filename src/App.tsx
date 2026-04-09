@@ -28,6 +28,8 @@ import {
   Clock,
   Info
 } from 'lucide-react';
+import { useTranslation } from '@nekazari/sdk';
+import './i18n';
 import './index.css';
 
 // Export viewerSlots for host integration
@@ -54,6 +56,7 @@ interface WorkflowItem {
 }
 
 const ModuleApp: React.FC = () => {
+  const { t } = useTranslation('n8n');
   const [integrations] = useState<IntegrationStatus[]>([
     {
       id: 'n8n',
@@ -197,12 +200,12 @@ const ModuleApp: React.FC = () => {
                 <Workflow className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">n8n Integration Hub</h1>
-                <p className="text-xs text-gray-500">Workflow Orchestration for Nekazari</p>
+                <h1 className="text-xl font-bold text-gray-900">{t('app.title')}</h1>
+                <p className="text-xs text-gray-500">{t('app.subtitle')}</p>
               </div>
               <div className="flex items-center gap-2 px-3 py-1 bg-orange-50 border border-orange-200 rounded-full ml-4">
                 <Info className="w-4 h-4 text-orange-600" />
-                <span className="text-xs text-orange-700">Standalone Mode</span>
+                <span className="text-xs text-orange-700">{t('app.standaloneMode')}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -212,7 +215,7 @@ const ModuleApp: React.FC = () => {
                 className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                {t('app.refresh')}
               </button>
               <a 
                 href="https://n8n.nekazari.artotxiki.com"
@@ -221,7 +224,7 @@ const ModuleApp: React.FC = () => {
                 className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors"
               >
                 <Settings className="w-4 h-4" />
-                Open n8n
+                {t('app.openN8n')}
               </a>
             </div>
           </div>
@@ -241,7 +244,7 @@ const ModuleApp: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {integrations.filter(i => i.status === 'connected').length}
                 </p>
-                <p className="text-sm text-gray-500">Active Integrations</p>
+                <p className="text-sm text-gray-500">{t('dashboard.activeIntegrations')}</p>
               </div>
             </div>
           </div>
@@ -254,7 +257,7 @@ const ModuleApp: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {workflows.filter(w => w.active).length}
                 </p>
-                <p className="text-sm text-gray-500">Active Workflows</p>
+                <p className="text-sm text-gray-500">{t('dashboard.activeWorkflows')}</p>
               </div>
             </div>
           </div>
@@ -267,7 +270,7 @@ const ModuleApp: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {workflows.reduce((acc, w) => acc + w.executions, 0)}
                 </p>
-                <p className="text-sm text-gray-500">Total Executions</p>
+                <p className="text-sm text-gray-500">{t('dashboard.totalExecutions')}</p>
               </div>
             </div>
           </div>
@@ -280,7 +283,7 @@ const ModuleApp: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {workflows.filter(w => w.status === 'success').length}
                 </p>
-                <p className="text-sm text-gray-500">Successful Today</p>
+                <p className="text-sm text-gray-500">{t('dashboard.successfulToday')}</p>
               </div>
             </div>
           </div>
@@ -290,8 +293,8 @@ const ModuleApp: React.FC = () => {
           {/* Integrations Panel */}
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Service Integrations</h2>
-              <p className="text-sm text-gray-500">Connected platform services</p>
+              <h2 className="text-lg font-semibold text-gray-900">{t('dashboard.serviceIntegrationsTitle')}</h2>
+              <p className="text-sm text-gray-500">{t('dashboard.serviceIntegrationsSubtitle')}</p>
             </div>
             <div className="p-6 space-y-3">
               {integrations.map(integration => (
