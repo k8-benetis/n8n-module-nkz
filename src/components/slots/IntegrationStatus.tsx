@@ -8,7 +8,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
-import { SlotShellCompact } from '@nekazari/viewer-kit';
+import { SlotShellCompact } from './SlotShell';
 import { Button, Badge, Spinner } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
 import {

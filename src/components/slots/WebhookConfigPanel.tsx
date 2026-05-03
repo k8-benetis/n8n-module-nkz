@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
-import { SlotShell } from '@nekazari/viewer-kit';
+import { SlotShell } from './SlotShell';
 import { Button, Badge, Spinner, Stack, Input, IconButton } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
 import { WebhookConfig } from '@/types/integrations';

@@ -42,10 +42,8 @@
     ]
   },
   "build_config": {
-    "type": "remote",
-    "remote_entry_url": "/modules/n8n-nkz/assets/remoteEntry.js",
-    "scope": "n8n_nkz",
-    "exposed_module": "./App"
+    "type": "iife",
+    "remote_entry_url": "/modules/n8n-nkz/nkz-module.js"
   },
   "integrations": {
     "n8n": {
