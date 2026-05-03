@@ -30,7 +30,6 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@nekazari/sdk';
 import './i18n';
-import './index.css';
 
 // Export viewerSlots for host integration
 export { viewerSlots } from './slots/index';

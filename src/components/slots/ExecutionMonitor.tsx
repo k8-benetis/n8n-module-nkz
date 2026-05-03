@@ -1,6 +1,6 @@
 /**
  * Execution Monitor - Bottom Panel Slot
- * 
+ *
  * Timeline view of workflow executions with filtering and details.
  * Shows real-time execution status and history.
  */
@@ -8,13 +8,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
-import { useUIKit } from '@/hooks/useUIKit';
+import { SlotShell } from '@nekazari/viewer-kit';
+import { Button, Badge, Spinner, Stack, Select, Toggle } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
-import { 
-  Activity, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
+import {
+  Activity,
+  CheckCircle2,
+  XCircle,
+  Clock,
   RefreshCw,
   AlertCircle,
   Filter,
@@ -37,8 +38,9 @@ interface ExecutionItem {
   mode: string;
 }
 
+const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
+
 export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className }) => {
-  const { Card } = useUIKit();
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();
@@ -53,14 +55,14 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
   // Fetch executions
   const fetchExecutions = async () => {
     if (!isAuthenticated) return;
-    
+
     setLoading(true);
     try {
       await api.getExecutions({
         status: filter !== 'all' ? filter : undefined,
         limit: expanded ? 50 : 10
       });
-      
+
       // Mock data for demo - would come from actual API
       const mockExecutions: ExecutionItem[] = [
         {
@@ -108,8 +110,8 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
           mode: 'cron'
         },
       ];
-      
-      setExecutions(mockExecutions.filter(e => 
+
+      setExecutions(mockExecutions.filter(e =>
         filter === 'all' || e.status === filter
       ));
       setError(null);
@@ -124,30 +126,30 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
   // Initial fetch and auto-refresh
   useEffect(() => {
     fetchExecutions();
-    
+
     if (autoRefresh) {
-      const interval = setInterval(fetchExecutions, 10000); // 10 seconds
+      const interval = setInterval(fetchExecutions, 10000);
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, filter, expanded, autoRefresh]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'running': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
-      case 'waiting': return <Clock className="w-4 h-4 text-yellow-500" />;
-      default: return <Clock className="w-4 h-4 text-gray-400" />;
+      case 'success': return <CheckCircle2 className="w-4 h-4 text-nkz-success" />;
+      case 'error': return <XCircle className="w-4 h-4 text-nkz-danger" />;
+      case 'running': return <RefreshCw className="w-4 h-4 text-nkz-info animate-spin" />;
+      case 'waiting': return <Clock className="w-4 h-4 text-nkz-warning" />;
+      default: return <Clock className="w-4 h-4 text-nkz-text-muted" />;
     }
   };
 
   const getStatusBg = (status: string) => {
     switch (status) {
-      case 'success': return 'bg-green-100';
-      case 'error': return 'bg-red-100';
-      case 'running': return 'bg-blue-100';
-      case 'waiting': return 'bg-yellow-100';
-      default: return 'bg-gray-100';
+      case 'success': return 'bg-nkz-success-soft';
+      case 'error': return 'bg-nkz-danger-soft';
+      case 'running': return 'bg-nkz-info-soft';
+      case 'waiting': return 'bg-nkz-warning-soft';
+      default: return 'bg-nkz-surface-sunken';
     }
   };
 
@@ -165,12 +167,12 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
 
   if (!isAuthenticated) {
     return (
-      <Card padding="sm" className={className}>
-        <div className="flex items-center gap-2 text-amber-600">
+      <SlotShell moduleId="n8n-nkz" accent={n8nAccent}>
+        <div className="flex items-center gap-2 text-nkz-warning">
           <AlertCircle className="w-4 h-4" />
-          <span className="text-xs">{t('common.loginRequired')}</span>
+          <span className="text-nkz-xs">{t('common.loginRequired')}</span>
         </div>
-      </Card>
+      </SlotShell>
     );
   }
 
@@ -178,122 +180,113 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
   const errorCount = executions.filter(e => e.status === 'error').length;
 
   return (
-    <Card padding="sm" className={`${className} overflow-hidden`}>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-semibold text-slate-800">{t('executions.title')}</span>
-          </div>
-          
-          {/* Status Summary */}
-          <div className="flex items-center gap-2">
-            {runningCount > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <RefreshCw className="w-3 h-3 animate-spin" />
-                {t('executions.running', { count: runningCount })}
-              </span>
-            )}
-            {errorCount > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs">
-                <XCircle className="w-3 h-3" />
-                {t('executions.errors', { count: errorCount })}
-              </span>
-            )}
-          </div>
-        </div>
-
+    <SlotShell
+      title={t('executions.title')}
+      icon={<Activity className="w-4 h-4" />}
+      collapsible
+      accent={n8nAccent}
+    >
+      <Stack gap="stack">
+        {/* Status Summary */}
         <div className="flex items-center gap-2">
-          {/* Filter */}
-          <div className="flex items-center gap-1">
-            <Filter className="w-3 h-3 text-slate-400" />
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="text-xs border-0 bg-transparent text-slate-600 focus:outline-none cursor-pointer"
+          {runningCount > 0 && (
+            <Badge intent="info" className="flex items-center gap-1">
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              {t('executions.running', { count: runningCount })}
+            </Badge>
+          )}
+          {errorCount > 0 && (
+            <Badge intent="negative" className="flex items-center gap-1">
+              <XCircle className="w-3 h-3" />
+              {t('executions.errors', { count: errorCount })}
+            </Badge>
+          )}
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-between">
+          <Select
+            value={filter}
+            onChange={(v) => setFilter(v as string)}
+            options={[
+              { value: 'all', label: t('executions.filter.all') },
+              { value: 'success', label: t('executions.filter.success') },
+              { value: 'error', label: t('executions.filter.error') },
+              { value: 'running', label: t('executions.filter.running') },
+            ]}
+            size="sm"
+          />
+
+          <div className="flex items-center gap-2">
+            <Toggle
+              checked={autoRefresh}
+              onChange={setAutoRefresh}
+              label=""
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setExpanded(!expanded)}
+              leadingIcon={expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
             >
-              <option value="all">{t('executions.filter.all')}</option>
-              <option value="success">{t('executions.filter.success')}</option>
-              <option value="error">{t('executions.filter.error')}</option>
-              <option value="running">{t('executions.filter.running')}</option>
-            </select>
+              {expanded ? t('executions.collapse') : t('executions.expand')}
+            </Button>
+            <a
+              href="https://n8n.robotika.cloud"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 text-nkz-accent-base hover:text-nkz-accent-strong"
+              title={t('app.openN8n')}
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
-
-          {/* Auto-refresh toggle */}
-          <button
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`p-1 rounded ${autoRefresh ? 'text-green-600' : 'text-slate-400'}`}
-            title={autoRefresh ? t('executions.autoRefreshOn') : t('executions.autoRefreshOff')}
-          >
-            <RefreshCw className={`w-3 h-3 ${autoRefresh ? 'animate-spin' : ''}`} />
-          </button>
-
-          {/* Expand/Collapse */}
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="p-1 text-slate-400 hover:text-slate-600"
-            title={expanded ? t('executions.collapse') : t('executions.expand')}
-          >
-            {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-          </button>
-          
-          {/* Open n8n */}
-          <a
-            href="https://n8n.robotika.cloud"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-1 text-orange-500 hover:text-orange-600"
-            title={t('app.openN8n')}
-          >
-            <ExternalLink className="w-4 h-4" />
-          </a>
         </div>
-      </div>
 
-      {/* Error */}
-      {error && (
-        <div className="flex items-center gap-2 text-red-600 bg-red-50 rounded p-2 mb-2">
-          <AlertCircle className="w-3 h-3" />
-          <span className="text-xs">{error}</span>
-        </div>
-      )}
-
-      {/* Executions Timeline */}
-      <div className={`overflow-x-auto ${expanded ? 'max-h-64' : 'max-h-32'} overflow-y-auto`}>
-        {loading && executions.length === 0 ? (
-          <div className="flex items-center justify-center py-4">
-            <RefreshCw className="w-4 h-4 text-orange-500 animate-spin" />
-          </div>
-        ) : executions.length === 0 ? (
-          <div className="text-xs text-slate-500 text-center py-4">
-            {t('executions.noExecutionsFound')}
-          </div>
-        ) : (
-          <div className="flex gap-2 pb-2">
-            {executions.map(execution => (
-              <div
-                key={execution.id}
-                className={`flex-shrink-0 p-2 rounded-lg ${getStatusBg(execution.status)} min-w-[140px] cursor-pointer hover:opacity-80 transition-opacity`}
-                title={`${execution.workflowName}\nStarted: ${new Date(execution.startedAt).toLocaleString()}\nDuration: ${formatDuration(execution.duration)}`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  {getStatusIcon(execution.status)}
-                  <span className="text-xs text-slate-600">{formatTime(execution.startedAt)}</span>
-                </div>
-                <p className="text-xs font-medium text-slate-800 truncate">
-                  {execution.workflowName}
-                </p>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-[10px] text-slate-500 uppercase">{execution.mode}</span>
-                  <span className="text-[10px] text-slate-500">{formatDuration(execution.duration)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* Error */}
+        {error && (
+          <Badge intent="negative" className="flex items-center gap-2">
+            <AlertCircle className="w-3 h-3" />
+            <span className="text-nkz-xs">{error}</span>
+          </Badge>
         )}
-      </div>
-    </Card>
+
+        {/* Executions Timeline */}
+        <div className={`overflow-x-auto ${expanded ? 'max-h-64' : 'max-h-32'} overflow-y-auto`}>
+          {loading && executions.length === 0 ? (
+            <div className="flex items-center justify-center py-4">
+              <Spinner size="md" />
+            </div>
+          ) : executions.length === 0 ? (
+            <div className="text-nkz-xs text-nkz-text-muted text-center py-4">
+              {t('executions.noExecutionsFound')}
+            </div>
+          ) : (
+            <div className="flex gap-2 pb-2">
+              {executions.map(execution => (
+                <div
+                  key={execution.id}
+                  className={`flex-shrink-0 p-nkz-inline rounded-nkz-lg ${getStatusBg(execution.status)} min-w-[140px] cursor-pointer hover:opacity-80 transition-opacity`}
+                  title={`${execution.workflowName}\nStarted: ${new Date(execution.startedAt).toLocaleString()}\nDuration: ${formatDuration(execution.duration)}`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    {getStatusIcon(execution.status)}
+                    <span className="text-nkz-xs text-nkz-text-secondary">{formatTime(execution.startedAt)}</span>
+                  </div>
+                  <p className="text-nkz-xs font-medium text-nkz-text-primary truncate">
+                    {execution.workflowName}
+                  </p>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-nkz-xs text-nkz-text-muted uppercase">{execution.mode}</span>
+                    <span className="text-nkz-xs text-nkz-text-muted">{formatDuration(execution.duration)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Stack>
+    </SlotShell>
   );
 };
 

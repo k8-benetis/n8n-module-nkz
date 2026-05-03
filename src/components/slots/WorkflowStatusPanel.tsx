@@ -1,6 +1,6 @@
 /**
  * Workflow Status Panel - Context Panel Slot
- * 
+ *
  * Shows workflow status and actions related to the selected entity.
  * Displays active workflows, recent executions, and quick actions.
  */
@@ -8,14 +8,15 @@
 import React, { useState, useEffect } from 'react';
 import { useViewer, useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
-import { useUIKit } from '@/hooks/useUIKit';
+import { SlotShell } from '@nekazari/viewer-kit';
+import { Button, Badge, Spinner, Stack, Panel } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
-import { 
-  Workflow, 
-  Play, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
+import {
+  Workflow,
+  Play,
+  CheckCircle2,
+  XCircle,
+  Clock,
   RefreshCw,
   AlertCircle,
   ExternalLink,
@@ -37,8 +38,9 @@ interface WorkflowSummary {
   relatedToEntity: boolean;
 }
 
+const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
+
 export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ className }) => {
-  const { Card, Button } = useUIKit();
   const { selectedEntityId, selectedEntityType } = useViewer();
   const { isAuthenticated, hasRole } = useAuth();
   const { t } = useTranslation('n8n');
@@ -51,18 +53,17 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
   // Fetch workflows on mount and when entity changes
   useEffect(() => {
     if (!isAuthenticated) return;
-    
+
     const fetchWorkflows = async () => {
       setLoading(true);
       setError(null);
       try {
         const response = await api.getWorkflows();
-        // Transform and filter workflows related to entity
         const summaries: WorkflowSummary[] = (response.workflows || []).map(w => ({
           id: w.id,
           name: w.name,
           active: w.active,
-          lastExecution: undefined, // Would come from executions API
+          lastExecution: undefined,
           relatedToEntity: w.name.toLowerCase().includes(selectedEntityType?.toLowerCase() || '')
         }));
         setWorkflows(summaries);
@@ -79,13 +80,12 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
 
   const executeWorkflow = async (workflowId: string) => {
     if (!selectedEntityId) return;
-    
+
     try {
       await api.executeWorkflow(workflowId, {
         entityId: selectedEntityId,
         entityType: selectedEntityType,
       });
-      // Refresh workflows after execution
       setLoading(true);
       const response = await api.getWorkflows();
       setWorkflows(response.workflows?.map(w => ({
@@ -102,107 +102,102 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
 
   const getStatusIcon = (status?: string) => {
     switch (status) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-      case 'error': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'running': return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
-      default: return <Clock className="w-4 h-4 text-gray-400" />;
+      case 'success': return <CheckCircle2 className="w-4 h-4 text-nkz-success" />;
+      case 'error': return <XCircle className="w-4 h-4 text-nkz-danger" />;
+      case 'running': return <RefreshCw className="w-4 h-4 text-nkz-info animate-spin" />;
+      default: return <Clock className="w-4 h-4 text-nkz-text-muted" />;
     }
   };
 
   if (!isAuthenticated) {
     return (
-      <Card padding="md" className={className}>
-        <div className="flex items-center gap-2 text-amber-600">
+      <SlotShell moduleId="n8n-nkz" accent={n8nAccent}>
+        <div className="flex items-center gap-2 text-nkz-warning">
           <AlertCircle className="w-5 h-5" />
-          <span className="text-sm">{t('common.loginRequired')}</span>
+          <span className="text-nkz-sm">{t('common.loginRequired')}</span>
         </div>
-      </Card>
+      </SlotShell>
     );
   }
 
   if (!selectedEntityId) {
     return (
-      <Card padding="md" className={className}>
-        <div className="flex items-center gap-2 text-gray-500">
+      <SlotShell moduleId="n8n-nkz" accent={n8nAccent}>
+        <div className="flex items-center gap-2 text-nkz-text-muted">
           <Workflow className="w-5 h-5" />
-          <span className="text-sm">{t('common.selectEntityToSeeWorkflows')}</span>
+          <span className="text-nkz-sm">{t('common.selectEntityToSeeWorkflows')}</span>
         </div>
-      </Card>
+      </SlotShell>
     );
   }
 
   const relatedWorkflows = workflows.filter(w => w.relatedToEntity || w.active);
 
   return (
-    <Card padding="md" className={className}>
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-orange-100">
-              <Workflow className="w-4 h-4 text-orange-600" />
-            </div>
-            <h3 className="text-sm font-semibold text-slate-800">
-              {t('workflows.title')}
-            </h3>
-          </div>
-          <a
-            href="https://n8n.robotika.cloud"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-orange-600 hover:text-orange-700 flex items-center gap-1"
-          >
-            <ExternalLink className="w-3 h-3" />
-            {t('app.openN8n')}
-          </a>
-        </div>
-
+    <SlotShell
+      title={t('workflows.title')}
+      icon={<Workflow className="w-4 h-4" />}
+      collapsible
+      accent={n8nAccent}
+    >
+      <Stack gap="stack">
         {/* Entity Context */}
-        <div className="text-xs bg-slate-50 rounded p-2">
+        <div className="bg-nkz-surface-sunken rounded-nkz-md p-nkz-inline">
           <div className="flex justify-between">
-            <span className="text-slate-500">{t('common.entity')}:</span>
-            <span className="text-slate-700 font-mono truncate max-w-[150px]">
+            <span className="text-nkz-xs text-nkz-text-muted">{t('common.entity')}:</span>
+            <span className="text-nkz-xs text-nkz-text-primary font-mono truncate max-w-[150px]">
               {selectedEntityId}
             </span>
           </div>
           <div className="flex justify-between mt-1">
-            <span className="text-slate-500">{t('common.type')}:</span>
-            <span className="text-slate-700">{selectedEntityType || t('common.unknown')}</span>
+            <span className="text-nkz-xs text-nkz-text-muted">{t('common.type')}:</span>
+            <span className="text-nkz-xs text-nkz-text-primary">{selectedEntityType || t('common.unknown')}</span>
           </div>
         </div>
 
+        {/* External Link */}
+        <a
+          href="https://n8n.robotika.cloud"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-nkz-xs text-nkz-accent-base hover:text-nkz-accent-strong flex items-center gap-1"
+        >
+          <ExternalLink className="w-3 h-3" />
+          {t('app.openN8n')}
+        </a>
+
         {/* Error State */}
         {error && (
-          <div className="flex items-center gap-2 text-red-600 bg-red-50 rounded p-2">
+          <Badge intent="negative" className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span className="text-xs">{error}</span>
-          </div>
+            <span className="text-nkz-xs">{error}</span>
+          </Badge>
         )}
 
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-4">
-            <RefreshCw className="w-5 h-5 text-orange-500 animate-spin" />
+            <Spinner size="md" />
           </div>
         )}
 
         {/* Workflows List */}
         {!loading && relatedWorkflows.length === 0 && (
-          <div className="text-sm text-slate-500 text-center py-4">
+          <div className="text-nkz-sm text-nkz-text-muted text-center py-4">
             {t('workflows.noActiveForEntityType')}
           </div>
         )}
 
         {!loading && relatedWorkflows.length > 0 && (
-          <div className="space-y-2">
+          <Stack gap="tight">
             {relatedWorkflows.slice(0, 5).map(workflow => (
               <div
                 key={workflow.id}
-                className="flex items-center justify-between p-2 bg-slate-50 rounded hover:bg-slate-100 transition-colors"
+                className="flex items-center justify-between p-nkz-inline bg-nkz-surface-sunken rounded-nkz-md hover:bg-nkz-surface transition-colors"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   {getStatusIcon(workflow.lastExecution?.status)}
-                  <span className="text-sm text-slate-700 truncate">
+                  <span className="text-nkz-sm text-nkz-text-primary truncate">
                     {workflow.name}
                   </span>
                 </div>
@@ -211,21 +206,21 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
                     variant="ghost"
                     size="sm"
                     onClick={() => executeWorkflow(workflow.id)}
-                    className="p-1 flex-shrink-0"
-                    title={t('workflows.executeWorkflow')}
+                    leadingIcon={<Zap className="w-4 h-4" />}
+                    className="flex-shrink-0"
                   >
-                    <Zap className="w-4 h-4 text-orange-500" />
+                    {t('workflows.executeWorkflow')}
                   </Button>
                 )}
               </div>
             ))}
-          </div>
+          </Stack>
         )}
 
         {/* Quick Actions */}
         {hasRole('TenantAdmin') && (
-          <div className="pt-2 border-t border-slate-200">
-            <p className="text-xs text-slate-500 mb-2">Quick Actions</p>
+          <div className="pt-nkz-stack border-t border-nkz-border">
+            <p className="text-nkz-xs text-nkz-text-muted mb-nkz-inline">{t('workflows.quickActions')}</p>
             <div className="flex gap-2">
               <Button
                 variant="primary"
@@ -236,7 +231,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
                   endDate: new Date().toISOString(),
                   indices: ['NDVI']
                 })}
-                className="text-xs flex-1"
+                className="flex-1"
               >
                 <Play className="w-3 h-3 mr-1" />
                 NDVI Analysis
@@ -249,7 +244,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
                   entityId: selectedEntityId!,
                   entityType: selectedEntityType!
                 })}
-                className="text-xs flex-1"
+                className="flex-1"
               >
                 <Zap className="w-3 h-3 mr-1" />
                 Predict
@@ -257,8 +252,8 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
             </div>
           </div>
         )}
-      </div>
-    </Card>
+      </Stack>
+    </SlotShell>
   );
 };
 

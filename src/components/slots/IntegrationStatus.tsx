@@ -1,6 +1,6 @@
 /**
  * Integration Status - Layer Toggle Slot
- * 
+ *
  * Quick status overview of all integrations in the layer panel.
  * Provides at-a-glance health status of connected services.
  */
@@ -8,14 +8,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
-import { useUIKit } from '@/hooks/useUIKit';
+import { SlotShellCompact } from '@nekazari/viewer-kit';
+import { Button, Badge, Spinner } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
-import { 
-  Workflow, 
-  Satellite, 
-  Brain, 
-  Bell, 
-  Database, 
+import {
+  Workflow,
+  Satellite,
+  Brain,
+  Bell,
+  Database,
   Bot,
   CheckCircle2,
   AlertCircle,
@@ -36,8 +37,9 @@ interface Integration {
   latency?: number;
 }
 
+const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
+
 export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className }) => {
-  const { Card } = useUIKit();
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();
@@ -55,11 +57,11 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
 
   const checkHealth = async () => {
     if (!isAuthenticated) return;
-    
+
     setLoading(true);
     try {
       const healthData = await api.getIntegrationsHealth();
-      
+
       setIntegrations(prev => prev.map(integration => {
         const health = healthData.find(h => h.id === integration.id);
         return {
@@ -70,7 +72,6 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
       }));
     } catch (err) {
       console.error('[IntegrationStatus] Error checking health:', err);
-      // Set all to unknown on error
       setIntegrations(prev => prev.map(i => ({ ...i, status: 'unknown' as const })));
     } finally {
       setLoading(false);
@@ -79,26 +80,16 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
 
   useEffect(() => {
     checkHealth();
-    // Check health every 60 seconds
     const interval = setInterval(checkHealth, 60000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'bg-green-500';
-      case 'degraded': return 'bg-yellow-500';
-      case 'unhealthy': return 'bg-red-500';
-      default: return 'bg-gray-400';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'healthy': return <CheckCircle2 className="w-3 h-3 text-green-500" />;
-      case 'degraded': return <AlertCircle className="w-3 h-3 text-yellow-500" />;
-      case 'unhealthy': return <AlertCircle className="w-3 h-3 text-red-500" />;
-      default: return <Clock className="w-3 h-3 text-gray-400" />;
+      case 'healthy': return 'bg-nkz-success';
+      case 'degraded': return 'bg-nkz-warning';
+      case 'unhealthy': return 'bg-nkz-danger';
+      default: return 'bg-nkz-border';
     }
   };
 
@@ -110,19 +101,18 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
   }
 
   return (
-    <Card padding="sm" className={className}>
-      {/* Compact Header */}
-      <div 
+    <SlotShellCompact moduleId="n8n-nkz" accent={n8nAccent}>
+      <div
         className="flex items-center justify-between cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-2">
-          <div className="p-1 rounded bg-orange-100">
-            <Workflow className="w-3 h-3 text-orange-600" />
+          <div className="p-1 rounded bg-nkz-accent-soft">
+            <Workflow className="w-3 h-3 text-nkz-accent-base" />
           </div>
-          <span className="text-xs font-medium text-slate-700">{t('integrations.hubLabel')}</span>
+          <span className="text-nkz-xs font-medium text-nkz-text-primary">{t('integrations.hubLabel')}</span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Quick Status Dots */}
           <div className="flex items-center gap-0.5">
@@ -134,17 +124,17 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
               />
             ))}
           </div>
-          
-          <span className="text-[10px] text-slate-500">
+
+          <span className="text-nkz-xs text-nkz-text-muted">
             {healthyCount}/{totalCount}
           </span>
-          
+
           <button
             onClick={(e) => {
               e.stopPropagation();
               checkHealth();
             }}
-            className="p-0.5 text-slate-400 hover:text-slate-600"
+            className="p-0.5 text-nkz-text-muted hover:text-nkz-text-secondary"
             disabled={loading}
             title={t('integrations.refreshStatus')}
           >
@@ -155,7 +145,7 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="p-0.5 text-orange-500 hover:text-orange-600"
+            className="p-0.5 text-nkz-accent-base hover:text-nkz-accent-strong"
             title={t('integrations.open')}
           >
             <ExternalLink className="w-3 h-3" />
@@ -165,27 +155,27 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className 
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+        <div className="mt-2 pt-2 border-t border-nkz-border space-y-1">
           {integrations.map(integration => (
             <div
               key={integration.id}
               className="flex items-center justify-between py-1"
             >
               <div className="flex items-center gap-2">
-                <span className="text-slate-400">{integration.icon}</span>
-                <span className="text-xs text-slate-600">{integration.name}</span>
+                <span className="text-nkz-text-muted">{integration.icon}</span>
+                <span className="text-nkz-xs text-nkz-text-secondary">{integration.name}</span>
               </div>
               <div className="flex items-center gap-1">
                 {integration.latency && (
-                  <span className="text-[10px] text-slate-400">{integration.latency}ms</span>
+                  <span className="text-nkz-xs text-nkz-text-muted">{integration.latency}ms</span>
                 )}
-                {getStatusIcon(integration.status)}
+                <div className={`w-2 h-2 rounded-full ${getStatusColor(integration.status)}`} />
               </div>
             </div>
           ))}
         </div>
       )}
-    </Card>
+    </SlotShellCompact>
   );
 };
 

@@ -5,6 +5,11 @@
   "version": "1.0.0",
   "description": "Workflow Orchestration Hub - Integrates n8n with Nekazari platform services including Sentinel/NDVI analysis, AI predictions, notifications, Odoo ERP, and ROS2 robotics",
   "short_description": "n8n workflow automation and service integration",
+  "accent": {
+    "base": "#F43F5E",
+    "soft": "#FFE4E6",
+    "strong": "#BE123C"
+  },
   "author": {
     "name": "Nekazari Team",
     "email": "nekazari@robotika.cloud",
@@ -86,10 +91,82 @@
       "assets/screenshot-integrations.png"
     ],
     "slots": {
-      "layer-toggle": [],
-      "context-panel": ["WorkflowStatusPanel", "WebhookConfigPanel", "NotificationsPanel"],
-      "bottom-panel": ["ExecutionMonitor"],
+      "layer-toggle": [
+        {
+          "id": "n8n-nkz-integration-toggle",
+          "component": "IntegrationStatus",
+          "priority": 80
+        }
+      ],
+      "context-panel": [
+        {
+          "id": "n8n-nkz-workflow-status",
+          "component": "WorkflowStatusPanel",
+          "priority": 60,
+          "tab": "Workflows"
+        },
+        {
+          "id": "n8n-nkz-webhook-config",
+          "component": "WebhookConfigPanel",
+          "priority": 50,
+          "tab": "Webhooks"
+        },
+        {
+          "id": "n8n-nkz-notifications-config",
+          "component": "NotificationsPanel",
+          "priority": 45,
+          "tab": "Notificaciones"
+        }
+      ],
+      "bottom-panel": [
+        {
+          "id": "n8n-nkz-execution-monitor",
+          "component": "ExecutionMonitor",
+          "priority": 70
+        }
+      ],
       "entity-tree": []
+    }
+  },
+  "surfaces": {
+    "web": {
+      "slots": {
+        "layer-toggle": [
+          {
+            "id": "n8n-nkz-integration-toggle",
+            "component": "IntegrationStatus",
+            "priority": 80
+          }
+        ],
+        "context-panel": [
+          {
+            "id": "n8n-nkz-workflow-status",
+            "component": "WorkflowStatusPanel",
+            "priority": 60,
+            "tab": "Workflows"
+          },
+          {
+            "id": "n8n-nkz-webhook-config",
+            "component": "WebhookConfigPanel",
+            "priority": 50,
+            "tab": "Webhooks"
+          },
+          {
+            "id": "n8n-nkz-notifications-config",
+            "component": "NotificationsPanel",
+            "priority": 45,
+            "tab": "Notificaciones"
+          }
+        ],
+        "bottom-panel": [
+          {
+            "id": "n8n-nkz-execution-monitor",
+            "component": "ExecutionMonitor",
+            "priority": 70
+          }
+        ],
+        "entity-tree": []
+      }
     }
   }
 }

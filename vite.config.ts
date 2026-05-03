@@ -78,12 +78,16 @@ export default defineConfig({
         'react',
         'react-dom',
         'react-router-dom',
+        '@nekazari/design-tokens',
+        '@nekazari/viewer-kit',
       ],
       output: {
         globals: {
           'react': 'React',
           'react-dom': 'ReactDOM',
           'react-router-dom': 'ReactRouterDOM',
+          '@nekazari/design-tokens': '__NKZ_DESIGN_TOKENS__',
+          '@nekazari/viewer-kit': '__NKZ_VIEWER_KIT__',
         },
         format: 'es',
       },
