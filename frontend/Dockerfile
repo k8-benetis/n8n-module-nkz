@@ -1,14 +1,17 @@
 # Multi-stage build for n8n Integration Hub Frontend
 # Stage 1: Build with Vite
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9 --activate
+
 # Copy package files
-COPY package.json package-lock.json* ./
+COPY pnpm-lock.yaml package.json ./
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy all necessary files for build
 COPY src/ ./src/
@@ -20,8 +23,8 @@ COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY manifest.json ./
 
-# Build application
-RUN npm run build
+# Build IIFE module bundle
+RUN pnpm run build:module
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
