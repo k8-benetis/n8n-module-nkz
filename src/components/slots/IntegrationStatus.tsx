@@ -9,7 +9,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
 import { SlotShellCompact } from './SlotShell';
-import { Button, Badge, Spinner } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
 import {
   Workflow,
@@ -18,9 +17,6 @@ import {
   Bell,
   Database,
   Bot,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
   RefreshCw,
   ExternalLink
 } from 'lucide-react';
@@ -39,7 +35,7 @@ interface Integration {
 
 const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
 
-export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className }) => {
+export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className: _className }) => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();

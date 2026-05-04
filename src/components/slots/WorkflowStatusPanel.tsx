@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { useViewer, useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
 import { SlotShell } from './SlotShell';
-import { Button, Badge, Spinner, Stack, Panel } from '@nekazari/ui-kit';
+import { Button, Badge, Spinner, Stack } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
 import {
   Workflow,
@@ -40,7 +40,7 @@ interface WorkflowSummary {
 
 const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
 
-export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ className }) => {
+export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ className: _className }) => {
   const { selectedEntityId, selectedEntityType } = useViewer();
   const { isAuthenticated, hasRole } = useAuth();
   const { t } = useTranslation('n8n');

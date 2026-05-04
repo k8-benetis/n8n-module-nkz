@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
 import { SlotShell } from './SlotShell';
-import { Button, Badge, Spinner, Stack, Select, Input } from '@nekazari/ui-kit';
+import { Button, Badge, Stack, Select, Input } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
 import {
   Bell,
@@ -28,7 +28,7 @@ interface NotificationsPanelProps {
 
 const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
 
-export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ className }) => {
+export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ className: _className }) => {
   const { isAuthenticated, hasAnyRole } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();
@@ -126,7 +126,7 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ classNam
             <div className="flex gap-2">
               <Select
                 value={testChannel}
-                onChange={(v) => setTestChannel(v as string)}
+                onValueChange={(v) => setTestChannel(v)}
                 options={[
                   { value: 'email', label: 'Email' },
                   { value: 'telegram', label: 'Telegram' },

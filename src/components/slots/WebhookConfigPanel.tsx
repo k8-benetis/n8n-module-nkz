@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
 import { SlotShell } from './SlotShell';
-import { Button, Badge, Spinner, Stack, Input, IconButton } from '@nekazari/ui-kit';
+import { Button, Badge, Stack, Input, IconButton } from '@nekazari/ui-kit';
 import { useModuleApi } from '@/services/api';
 import { WebhookConfig } from '@/types/integrations';
 import {
@@ -16,7 +16,6 @@ import {
   Plus,
   Trash2,
   PlayCircle,
-  RefreshCw,
   CheckCircle2,
   XCircle,
   AlertCircle,
@@ -29,7 +28,7 @@ interface WebhookConfigPanelProps {
 
 const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
 
-export const WebhookConfigPanel: React.FC<WebhookConfigPanelProps> = ({ className }) => {
+export const WebhookConfigPanel: React.FC<WebhookConfigPanelProps> = ({ className: _className }) => {
   const { isAuthenticated, hasAnyRole } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();

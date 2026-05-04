@@ -11,8 +11,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nekazari/sdk": "^1.0.0",
-    "@nekazari/ui-kit": "^1.0.1",
+    "@nekazari/design-tokens": "^0.1.0-alpha.0",
+    "@nekazari/sdk": "^1.0.5",
+    "@nekazari/ui-kit": "^1.0.2-alpha.4",
     "lucide-react": "^0.424.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

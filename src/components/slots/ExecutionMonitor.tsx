@@ -18,7 +18,6 @@ import {
   Clock,
   RefreshCw,
   AlertCircle,
-  Filter,
   ChevronDown,
   ChevronUp,
   ExternalLink
@@ -40,7 +39,7 @@ interface ExecutionItem {
 
 const n8nAccent = { base: '#F43F5E', soft: '#FFE4E6', strong: '#BE123C' };
 
-export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className }) => {
+export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className: _className }) => {
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();
@@ -207,7 +206,7 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className })
         <div className="flex items-center justify-between">
           <Select
             value={filter}
-            onChange={(v) => setFilter(v as string)}
+            onValueChange={(v) => setFilter(v)}
             options={[
               { value: 'all', label: t('executions.filter.all') },
               { value: 'success', label: t('executions.filter.success') },
