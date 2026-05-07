@@ -48,19 +48,19 @@ export function SlotShell({
   return (
     <SlotErrorBoundary>
       <div
-        className={`border border-gray-200 rounded-lg bg-white/80 backdrop-blur-sm ${className || ''}`}
+        className={`border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-slate-900 ${className || ''}`}
         style={{ minWidth: 0 }}
       >
         {(title || collapsible) && (
-          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              {icon && <span className="text-gray-500">{icon}</span>}
-              {title && <span className="text-sm font-medium text-gray-700">{title}</span>}
+              {icon && <span className="text-gray-500 dark:text-gray-300">{icon}</span>}
+              {title && <span className="text-sm font-medium text-gray-700 dark:text-gray-100">{title}</span>}
             </div>
             {collapsible && (
               <button
                 onClick={toggle}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-0.5 rounded"
                 aria-label={collapsed ? 'Expand' : 'Collapse'}
               >
                 <span
@@ -85,7 +85,7 @@ export function SlotShellCompact({
   return (
     <SlotErrorBoundary>
       <div
-        className={`border border-gray-200 rounded-lg bg-white/80 backdrop-blur-sm ${className || ''}`}
+        className={`border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-slate-900 ${className || ''}`}
         style={{ minWidth: 0 }}
       >
         <div className="p-2">{children}</div>
