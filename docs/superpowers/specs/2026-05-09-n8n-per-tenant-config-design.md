@@ -125,23 +125,27 @@ Endpoints (all under `/api/n8n-nkz/tenant`):
 
 ### Modified: `backend/app/routers/n8n.py`
 
-The existing `GET /n8n/url` endpoint now reads tenant config first:
+The existing `GET /n8n/url` endpoint now reads tenant config. **No global fallback**
+— a multitenant platform cannot have a shared n8n instance:
+
 ```
-tenant_config → n8n_url found  → return it
-tenant_config → not found      → return settings.n8n_public_url (global fallback)
+tenant_config → n8n_url found  → return { url }
+tenant_config → not found      → return { url: null }
 ```
 
 ### Modified: `backend/app/routers/n8n.py` — proxy calls use tenant credentials
 
-The `n8n_request()` helper currently uses global `settings.n8n_url` and
-`settings.n8n_api_key`. After this change, it resolves per tenant:
+The `n8n_request()` helper uses **only** the tenant's credentials. If the tenant
+hasn't configured n8n, it returns a clear error — no silent fallback to any global:
 
 ```python
 async def n8n_request(method, path, settings, tenant_id, json_data=None):
     config = get_tenant_config(tenant_id)
-    url = (config["n8n_url"] if config else settings.n8n_url)
-    api_key = decrypt_token(config["n8n_api_key_encrypted"]) if config else settings.n8n_api_key
-    # ... use url + api_key for the n8n API call
+    if not config or not config.get("n8n_url"):
+        raise HTTPException(400, "n8n not configured for this tenant")
+    url = config["n8n_url"]
+    api_key = decrypt_token(config["n8n_api_key_encrypted"])
+    # ... use url + api_key
 ```
 
 All existing n8n proxy routes (`GET /workflows`, `GET /executions`, etc.) pass
@@ -245,7 +249,7 @@ data:
 - Fernet encryption at rest
 - Config panel for TenantAdmin
 - Test connection before save
-- Backward compatible (tenants without config use global n8n)
+- Tenants without config: frontend shows setup prompt, API calls return clear error
 
 **Out of scope (Phase 2):**
 - Auto-provisioning n8n instances per tenant
