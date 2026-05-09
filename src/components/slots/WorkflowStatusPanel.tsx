@@ -10,6 +10,7 @@ import { useViewer, useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
 import { SlotShell } from './SlotShell';
 import { Button, Badge, Spinner, Stack } from '@nekazari/ui-kit';
+import { useN8nUrl } from '@/hooks/useN8nUrl';
 import { useModuleApi } from '@/services/api';
 import {
   Workflow,
@@ -45,6 +46,7 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
   const { isAuthenticated, hasRole } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();
+  const n8nUrl = useN8nUrl();
 
   const [workflows, setWorkflows] = useState<WorkflowSummary[]>([]);
   const [loading, setLoading] = useState(false);
@@ -156,15 +158,17 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
         </div>
 
         {/* External Link */}
-        <a
-          href="https://n8n.robotika.cloud"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-nkz-xs text-nkz-accent-base hover:text-nkz-accent-strong flex items-center gap-1"
-        >
-          <ExternalLink className="w-3 h-3" />
-          {t('app.openN8n')}
-        </a>
+        {n8nUrl && (
+          <a
+            href={n8nUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-nkz-xs text-nkz-accent-base hover:text-nkz-accent-strong flex items-center gap-1"
+          >
+            <ExternalLink className="w-3 h-3" />
+            {t('app.openN8n')}
+          </a>
+        )}
 
         {/* Error State */}
         {error && (

@@ -3,7 +3,7 @@ ROS2 Router - Agricultural robotics integration
 """
 
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 import httpx
 
@@ -260,6 +260,7 @@ async def create_mission(
 @router.get("/robots/{robot_id}/telemetry/stream")
 async def get_robot_telemetry_stream_info(
     robot_id: str,
+    request: Request,
     user: TokenPayload = Depends(get_current_user),
     settings: Settings = Depends(get_settings),
 ):
@@ -267,9 +268,11 @@ async def get_robot_telemetry_stream_info(
     Get WebSocket URL for real-time robot telemetry.
     Connect to the returned URL for live position, battery, sensor updates.
     """
+    host = request.headers.get("X-Forwarded-Host") or request.headers.get("Host", "nkz.robotika.cloud")
+    scheme = "wss" if request.headers.get("X-Forwarded-Proto", "https") == "https" else "ws"
     return {
         "robotId": robot_id,
-        "websocketUrl": f"wss://nkz.artotxiki.com/api/n8n-nkz/ros2/robots/{robot_id}/telemetry/ws",
+        "websocketUrl": f"{scheme}://{host}/api/n8n-nkz/ros2/robots/{robot_id}/telemetry/ws",
         "protocol": "json",
         "updateInterval": "100ms",
         "fields": ["position", "heading", "speed", "batteryLevel", "sensors"],

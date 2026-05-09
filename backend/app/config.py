@@ -21,20 +21,22 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["*"]
     
     # Keycloak / JWT Authentication
-    keycloak_url: str = "https://auth.artotxiki.com/auth"
+    keycloak_url: str = "https://auth.robotika.cloud/auth"
     keycloak_realm: str = "nekazari"
     jwt_audience: str = "account"
     jwt_issuer: str = ""  # Auto-derived from keycloak_url + realm if empty
-    
+
     # Service-to-service authentication
     module_management_key: str = ""
-    
+
     # ==========================================================================
     # Integration Service URLs
     # ==========================================================================
-    
-    # n8n
+
+    # n8n (internal cluster URL for backend-to-n8n API calls)
     n8n_url: str = "http://n8n-service:5678"
+    # n8n public URL (for frontend "Open n8n" button, external access via ingress)
+    n8n_public_url: str = "https://n8n.nekazari.robotika.cloud"
     n8n_api_key: str = ""
     
     # Intelligence Module
@@ -58,7 +60,7 @@ class Settings(BaseSettings):
     
     # Orion-LD
     orion_url: str = "http://orion-ld-service:1026"
-    context_url: str = "https://nekazari.artotxiki.com/ngsi-ld-context.json"
+    context_url: str = "https://nekazari.robotika.cloud/ngsi-ld-context.json"
     
     # Redis (for caching)
     redis_host: str = "redis-service"

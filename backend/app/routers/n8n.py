@@ -14,6 +14,19 @@ router = APIRouter(prefix="/n8n")
 
 
 # =============================================================================
+# Config endpoint — public n8n URL for frontend
+# =============================================================================
+
+@router.get("/url")
+async def get_n8n_public_url(
+    user: TokenPayload = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
+):
+    """Return the public n8n URL so the frontend never hardcodes it."""
+    return {"url": settings.n8n_public_url}
+
+
+# =============================================================================
 # Models
 # =============================================================================
 

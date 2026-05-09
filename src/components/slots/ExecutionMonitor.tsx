@@ -10,6 +10,7 @@ import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
 import { SlotShell } from './SlotShell';
 import { Button, Badge, Spinner, Stack, Select, Toggle } from '@nekazari/ui-kit';
+import { useN8nUrl } from '@/hooks/useN8nUrl';
 import { useModuleApi } from '@/services/api';
 import {
   Activity,
@@ -43,6 +44,7 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className: _
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();
+  const n8nUrl = useN8nUrl();
 
   const [executions, setExecutions] = useState<ExecutionItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -230,15 +232,17 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className: _
             >
               {expanded ? t('executions.collapse') : t('executions.expand')}
             </Button>
-            <a
-              href="https://n8n.robotika.cloud"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 text-nkz-accent-base hover:text-nkz-accent-strong"
-              title={t('app.openN8n')}
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
+            {n8nUrl && (
+              <a
+                href={n8nUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 text-nkz-accent-base hover:text-nkz-accent-strong"
+                title={t('app.openN8n')}
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
           </div>
         </div>
 

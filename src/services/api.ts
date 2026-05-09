@@ -47,11 +47,19 @@ export function useModuleApi() {
 
   return {
     // =========================================================================
+    // Config
+    // =========================================================================
+
+    /** Get the public n8n URL (never hardcoded in frontend) */
+    getN8nUrl: (): Promise<string> =>
+      client.get('/n8n/url').then((data: any) => data.url),
+
+    // =========================================================================
     // Health & Status
     // =========================================================================
-    
+
     /** Get health status of all integrations */
-    getIntegrationsHealth: (): Promise<IntegrationHealth[]> => 
+    getIntegrationsHealth: (): Promise<IntegrationHealth[]> =>
       client.get('/health/integrations'),
     
     /** Get specific integration health */
