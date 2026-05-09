@@ -56,6 +56,8 @@ spec:
             # n8n Configuration
             - name: N8N_URL
               value: "http://n8n-service:5678"
+            - name: N8N_PUBLIC_URL
+              value: "https://n8n.nekazari.robotika.cloud"
             - name: N8N_API_KEY
               valueFrom:
                 secretKeyRef:

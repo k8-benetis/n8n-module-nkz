@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useTranslation } from '@nekazari/sdk';
 import { SlotShellCompact } from './SlotShell';
+import { useN8nUrl } from '@/hooks/useN8nUrl';
 import { useModuleApi } from '@/services/api';
 import {
   Workflow,
@@ -39,6 +40,7 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className:
   const { isAuthenticated } = useAuth();
   const { t } = useTranslation('n8n');
   const api = useModuleApi();
+  const n8nUrl = useN8nUrl();
 
   const [integrations, setIntegrations] = useState<Integration[]>([
     { id: 'n8n', name: 'n8n', icon: <Workflow className="w-3 h-3" />, status: 'unknown' },
@@ -136,16 +138,18 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className:
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <a
-            href="https://n8n.robotika.cloud"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="p-0.5 text-nkz-accent-base hover:text-nkz-accent-strong"
-            title={t('integrations.open')}
-          >
-            <ExternalLink className="w-3 h-3" />
-          </a>
+          {n8nUrl && (
+            <a
+              href={n8nUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="p-0.5 text-nkz-accent-base hover:text-nkz-accent-strong"
+              title={t('integrations.open')}
+            >
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
         </div>
       </div>
 
