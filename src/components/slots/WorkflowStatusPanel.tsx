@@ -158,17 +158,15 @@ export const WorkflowStatusPanel: React.FC<WorkflowStatusPanelProps> = ({ classN
         </div>
 
         {/* External Link */}
-        {n8nUrl && (
-          <a
-            href={n8nUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-nkz-xs text-nkz-accent-base hover:text-nkz-accent-strong flex items-center gap-1"
-          >
-            <ExternalLink className="w-3 h-3" />
-            {t('app.openN8n')}
-          </a>
-        )}
+        <a
+          href={n8nUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-nkz-xs text-nkz-accent-base hover:text-nkz-accent-strong flex items-center gap-1"
+        >
+          <ExternalLink className="w-3 h-3" />
+          {t('app.openN8n')}
+        </a>
 
         {/* Error State */}
         {error && (

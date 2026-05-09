@@ -4,10 +4,14 @@ import { useModuleApi } from '@/services/api';
 
 let cachedUrl: string | null = null;
 
-export function useN8nUrl(): string | null {
+function deriveFallbackUrl(): string {
+  return `https://n8n.${window.location.hostname}`;
+}
+
+export function useN8nUrl(): string {
   const { isAuthenticated } = useAuth();
   const api = useModuleApi();
-  const [url, setUrl] = useState<string | null>(cachedUrl);
+  const [url, setUrl] = useState<string>(cachedUrl || deriveFallbackUrl());
 
   useEffect(() => {
     if (cachedUrl) return;
@@ -17,7 +21,8 @@ export function useN8nUrl(): string | null {
       cachedUrl = fetchedUrl;
       setUrl(fetchedUrl);
     }).catch(() => {
-      // Silent fallback — button simply won't render if URL unavailable
+      cachedUrl = deriveFallbackUrl();
+      setUrl(cachedUrl);
     });
   }, [isAuthenticated]);
 
