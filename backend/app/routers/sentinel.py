@@ -7,11 +7,29 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from datetime import datetime
 import httpx
+import re
+import os
 
 from app.config import get_settings, Settings
 from app.middleware import get_current_user, get_tenant_id, TokenPayload
 
 router = APIRouter(prefix="/sentinel")
+
+
+def _make_headers(tenant_id: str) -> dict:
+    n = tenant_id.lower().strip().replace('-', '_').replace(' ', '_')
+    n = re.sub(r'[^a-z0-9_]', '', n)
+    n = n.strip('_') or tenant_id
+    headers = {
+        "NGSILD-Tenant": n,
+        "Fiware-Service": n,
+        "Fiware-ServicePath": "/",
+        "Accept": "application/ld+json",
+    }
+    ctx = os.getenv("CONTEXT_URL", "")
+    if ctx:
+        headers["Link"] = f'<{ctx}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
+    return headers
 
 
 # =============================================================================
@@ -218,11 +236,7 @@ async def set_alert_thresholds(
                         }
                     }
                 },
-                headers={
-                    "Content-Type": "application/json",
-                    "NGSILD-Tenant": tenant_id,
-                    "Link": f'<{settings.context_url}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
-                }
+                headers={**_make_headers(tenant_id), "Content-Type": "application/json"}
             )
             response.raise_for_status()
     except Exception:
