@@ -5,7 +5,7 @@ import logging
 from kubernetes import client, config
 from app.common.sanitize import n8n_resource_name, n8n_db_name, n8n_host
 from app.common.fernet_crypto import encrypt_token
-from app.common.tenant_config_service import upsert_tenant_config
+from app.common.tenant_config_service import get_tenant_config, upsert_tenant_config
 from app.common.db import get_db_connection_safe
 
 logger = logging.getLogger(__name__)
@@ -318,3 +318,124 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
         "api_key": creds["api_key"],
         "db_name": db_name,
     }
+
+
+def suspend_n8n_tenant(tenant_id: str) -> bool:
+    """Scale the tenant's n8n deployment to 0 replicas."""
+    _load_k8s_config()
+    apps_v1 = _k8s_apps_v1()
+    name = n8n_resource_name(tenant_id)
+
+    try:
+        apps_v1.patch_namespaced_deployment(
+            name=name,
+            namespace=NAMESPACE,
+            body={"spec": {"replicas": 0}},
+        )
+
+        config = get_tenant_config(tenant_id) or {}
+        config["provisioning_status"] = "suspended"
+        config["suspended_at"] = None
+        upsert_tenant_config(tenant_id, config)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to suspend n8n for tenant {tenant_id}: {e}")
+        return False
+
+
+def reactivate_n8n_tenant(tenant_id: str) -> bool:
+    """Scale the tenant's n8n deployment back to 1 replica."""
+    _load_k8s_config()
+    apps_v1 = _k8s_apps_v1()
+    name = n8n_resource_name(tenant_id)
+
+    try:
+        apps_v1.patch_namespaced_deployment(
+            name=name,
+            namespace=NAMESPACE,
+            body={"spec": {"replicas": 1}},
+        )
+
+        config = get_tenant_config(tenant_id) or {}
+        config["provisioning_status"] = "active"
+        config["suspended_at"] = None
+        upsert_tenant_config(tenant_id, config)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to reactivate n8n for tenant {tenant_id}: {e}")
+        return False
+
+
+def start_grace_period_n8n_tenant(tenant_id: str) -> bool:
+    """Suspend the deployment and mark as grace_period."""
+    _load_k8s_config()
+    apps_v1 = _k8s_apps_v1()
+    name = n8n_resource_name(tenant_id)
+
+    try:
+        apps_v1.patch_namespaced_deployment(
+            name=name,
+            namespace=NAMESPACE,
+            body={"spec": {"replicas": 0}},
+        )
+
+        config = get_tenant_config(tenant_id) or {}
+        config["provisioning_status"] = "grace_period"
+        config["suspended_at"] = None
+        upsert_tenant_config(tenant_id, config)
+        return True
+    except Exception as e:
+        logger.error(f"Failed to start grace period for tenant {tenant_id}: {e}")
+        return False
+
+
+def purge_n8n_tenant(tenant_id: str) -> bool:
+    """Delete ALL K8s resources and DB for a tenant's n8n instance."""
+    _load_k8s_config()
+    apps_v1 = _k8s_apps_v1()
+    core_v1 = _k8s_core_v1()
+    net_v1 = _k8s_networking_v1()
+    auto_v1 = _k8s_autoscaling_v1()
+    name = n8n_resource_name(tenant_id)
+
+    errors = []
+
+    resources = [
+        ("HPA", lambda: auto_v1.delete_namespaced_horizontal_pod_autoscaler(
+            f"{name}-hpa", NAMESPACE)),
+        ("Ingress", lambda: net_v1.delete_namespaced_ingress(
+            f"{name}-ingress", NAMESPACE)),
+        ("Deployment", lambda: apps_v1.delete_namespaced_deployment(
+            name, NAMESPACE)),
+        ("Service", lambda: core_v1.delete_namespaced_service(
+            f"{name}-service", NAMESPACE)),
+        ("PVC", lambda: core_v1.delete_namespaced_persistent_volume_claim(
+            f"{name}-workflows", NAMESPACE)),
+        ("Secret", lambda: core_v1.delete_namespaced_secret(
+            f"{name}-secret", NAMESPACE)),
+    ]
+
+    for resource_name, delete_fn in resources:
+        try:
+            delete_fn()
+        except client.ApiException as e:
+            if e.status == 404:
+                continue
+            errors.append(f"{resource_name}: {e}")
+
+    if not drop_n8n_tenant_db(tenant_id):
+        errors.append("DB drop failed")
+
+    if errors:
+        logger.error(f"Purge errors for tenant {tenant_id}: {errors}")
+        return False
+
+    config = get_tenant_config(tenant_id) or {}
+    config["provisioning_status"] = "none"
+    config["n8n_url"] = None
+    config["n8n_api_key_encrypted"] = None
+    config["suspended_at"] = None
+    config["stripe_subscription_id"] = None
+    upsert_tenant_config(tenant_id, config)
+
+    return True
