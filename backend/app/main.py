@@ -19,6 +19,7 @@ from app.routers import (
     odoo,
     ros2,
     webhooks,
+    tenant_config,
 )
 
 
@@ -97,7 +98,8 @@ Use Bearer authentication with your access token.
     app.include_router(odoo.router, prefix=settings.api_prefix, tags=["Odoo ERP"])
     app.include_router(ros2.router, prefix=settings.api_prefix, tags=["ROS2 Robotics"])
     app.include_router(webhooks.router, prefix=settings.api_prefix, tags=["Webhooks"])
-    
+    app.include_router(tenant_config.router, prefix=settings.api_prefix, tags=["Tenant Config"])
+
     return app
 
 
