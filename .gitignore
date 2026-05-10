@@ -48,3 +48,6 @@ htmlcov/
 venv/
 .venv/
 env/
+
+# Internal development docs (not public)
+docs/superpowers/
