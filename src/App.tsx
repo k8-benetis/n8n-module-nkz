@@ -218,15 +218,17 @@ const ModuleApp: React.FC = () => {
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 {t('app.refresh')}
               </button>
-              <a
-                href={n8nUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors"
-              >
-                <Settings className="w-4 h-4" />
-                {t('app.openN8n')}
-              </a>
+              {n8nUrl && (
+                <a
+                  href={n8nUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  {t('app.openN8n')}
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -383,12 +385,14 @@ const ModuleApp: React.FC = () => {
                 In production, the module integrates into the Unified Viewer via slots for 
                 real-time workflow status and execution monitoring.
               </p>
-              <p className="text-xs text-blue-600 mt-2">
-                Access the full n8n interface at{' '}
-                <a href={n8nUrl} className="underline" target="_blank" rel="noopener">
-                  {n8nUrl.replace('https://', '')}
-                </a>
-              </p>
+              {n8nUrl && (
+                <p className="text-xs text-blue-600 mt-2">
+                  Access the full n8n interface at{' '}
+                  <a href={n8nUrl} className="underline" target="_blank" rel="noopener">
+                    {n8nUrl.replace('https://', '')}
+                  </a>
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -2,27 +2,25 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useModuleApi } from '@/services/api';
 
-let cachedUrl: string | null = null;
+let cachedUrl: string | null | undefined = undefined;
 
-function deriveFallbackUrl(): string {
-  return `https://n8n.${window.location.hostname}`;
-}
-
-export function useN8nUrl(): string {
+export function useN8nUrl(): string | null {
   const { isAuthenticated } = useAuth();
   const api = useModuleApi();
-  const [url, setUrl] = useState<string>(cachedUrl || deriveFallbackUrl());
+  const [url, setUrl] = useState<string | null>(
+    cachedUrl !== undefined ? cachedUrl : null
+  );
 
   useEffect(() => {
-    if (cachedUrl) return;
+    if (cachedUrl !== undefined) return;
     if (!isAuthenticated) return;
 
-    api.getN8nUrl().then((fetchedUrl: string) => {
+    api.getN8nUrl().then((fetchedUrl: string | null) => {
       cachedUrl = fetchedUrl;
       setUrl(fetchedUrl);
     }).catch(() => {
-      cachedUrl = deriveFallbackUrl();
-      setUrl(cachedUrl);
+      cachedUrl = null;
+      setUrl(null);
     });
   }, [isAuthenticated]);
 

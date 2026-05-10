@@ -232,15 +232,17 @@ export const ExecutionMonitor: React.FC<ExecutionMonitorProps> = ({ className: _
             >
               {expanded ? t('executions.collapse') : t('executions.expand')}
             </Button>
-            <a
-              href={n8nUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 text-nkz-accent-base hover:text-nkz-accent-strong"
-              title={t('app.openN8n')}
-            >
-              <ExternalLink className="w-4 h-4" />
-            </a>
+            {n8nUrl && (
+              <a
+                href={n8nUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 text-nkz-accent-base hover:text-nkz-accent-strong"
+                title={t('app.openN8n')}
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
           </div>
         </div>
 

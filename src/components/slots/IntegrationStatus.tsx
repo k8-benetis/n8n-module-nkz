@@ -138,16 +138,18 @@ export const IntegrationStatus: React.FC<IntegrationStatusProps> = ({ className:
           >
             <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <a
-            href={n8nUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="p-0.5 text-nkz-accent-base hover:text-nkz-accent-strong"
-            title={t('integrations.open')}
-          >
-            <ExternalLink className="w-3 h-3" />
-          </a>
+          {n8nUrl && (
+            <a
+              href={n8nUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="p-0.5 text-nkz-accent-base hover:text-nkz-accent-strong"
+              title={t('integrations.open')}
+            >
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
         </div>
       </div>
 
