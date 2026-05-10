@@ -2,13 +2,14 @@
 n8n Integration Hub Backend - Authentication Middleware
 
 JWT validation middleware for Keycloak tokens.
+Accepts both Bearer token and nkz_token cookie (httpOnly).
 Compatible with Nekazari platform authentication.
 """
 
 import httpx
 from typing import Optional
 from functools import lru_cache
-from fastapi import HTTPException, Depends, Header, status
+from fastapi import HTTPException, Depends, Header, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, jwk, JWTError
 from jose.exceptions import JWKError
@@ -92,26 +93,41 @@ class TokenPayload:
         return any(role in self.roles for role in roles)
 
 
+def _extract_token(
+    credentials: Optional[HTTPAuthorizationCredentials],
+    request: Request,
+) -> str | None:
+    """Extract JWT from Bearer header or nkz_token cookie."""
+    if credentials:
+        return credentials.credentials
+    cookie = request.cookies.get("nkz_token")
+    if cookie:
+        return cookie
+    return None
+
+
 async def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    request: Request = None,  # type: ignore[assignment]
     settings: Settings = Depends(get_settings),
 ) -> TokenPayload:
     """
     Validate JWT token and return user payload.
-    
+    Accepts Bearer token (Authorization header) or nkz_token cookie.
+
     Usage:
         @router.get("/protected")
         async def protected_route(user: TokenPayload = Depends(get_current_user)):
             return {"user": user.email}
     """
-    if not credentials:
+    token = _extract_token(credentials, request) if request else (credentials.credentials if credentials else None)
+
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization token",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    token = credentials.credentials
     
     try:
         # Decode header to get key ID
