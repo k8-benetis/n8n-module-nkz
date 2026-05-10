@@ -67,6 +67,22 @@
     "expand": "Configuracion n8n (solo admin)",
     "noAdminAccess": "Solo administradores del tenant pueden configurar n8n",
     "urlPlaceholder": "https://n8n.mi-empresa.com",
-    "apiKeyPlaceholder": "n8n_api_..."
+    "apiKeyPlaceholder": "n8n_api_...",
+    "activateEnterprise": "Activar n8n (incluido en tu plan)",
+    "activatePaid": "Activar n8n (4.99€/mes)",
+    "provisioningInProgress": "Creando tu instancia n8n... (1-2 minutos)",
+    "activeInstance": "Instancia n8n activa",
+    "copyCredentials": "Guardar credenciales",
+    "openInstance": "Abrir n8n",
+    "cancelSubscription": "Cancelar suscripcion",
+    "manageSubscription": "Gestionar suscripcion",
+    "reactivateSubscription": "Reactivar suscripcion",
+    "suspendedTitle": "Instancia suspendida",
+    "suspendedDesc": "Por impago. Reactiva tu suscripcion para restaurarla.",
+    "gracePeriodTitle": "Instancia pendiente de eliminacion",
+    "gracePeriodDesc": "Se eliminara en {days} dias. Reactiva antes del {date} para conservar tus workflows.",
+    "errorProvisioning": "Error al provisionar",
+    "retry": "Reintentar",
+    "passwordCopied": "Contrasena copiada"
   }
 }
