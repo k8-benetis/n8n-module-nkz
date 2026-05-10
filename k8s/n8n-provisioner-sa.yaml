@@ -1,0 +1,48 @@
+# =============================================================================
+# n8n Provisioner ServiceAccount + RBAC
+# =============================================================================
+# Allows the n8n-nkz backend to manage per-tenant n8n K8s resources.
+# Apply before deploying the updated backend.
+# =============================================================================
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: n8n-provisioner
+  namespace: nekazari
+  labels:
+    app: n8n-nkz
+    module: n8n-nkz
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: n8n-provisioner-role
+  namespace: nekazari
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create", "get", "list", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["services", "persistentvolumeclaims", "secrets"]
+  verbs: ["create", "get", "list", "update", "delete"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["create", "get", "list", "update", "delete"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["create", "get", "list", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: n8n-provisioner-binding
+  namespace: nekazari
+subjects:
+- kind: ServiceAccount
+  name: n8n-provisioner
+  namespace: nekazari
+roleRef:
+  kind: Role
+  name: n8n-provisioner-role
+  apiGroup: rbac.authorization.k8s.io

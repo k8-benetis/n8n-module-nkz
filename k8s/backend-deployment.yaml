@@ -32,6 +32,7 @@ spec:
         prometheus.io/port: "8000"
         prometheus.io/path: "/metrics"
     spec:
+      serviceAccountName: n8n-provisioner
       containers:
         - name: backend
           image: ghcr.io/nkz-os/n8n-module-nkz/n8n-nkz-backend:main
@@ -66,6 +67,30 @@ spec:
                 secretKeyRef:
                   name: n8n-nkz-secret
                   key: encryption-key
+                  optional: true
+            # Stripe
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-secret
+                  key: secret-key
+                  optional: true
+            - name: STRIPE_PUBLISHABLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-secret
+                  key: publishable-key
+                  optional: true
+            - name: N8N_ADDON_PRICE_ID
+              value: ""
+            # Grace period
+            - name: N8N_GRACE_PERIOD_DAYS
+              value: "30"
+            - name: INTERNAL_BILLING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: billing-secret
+                  key: internal-secret
                   optional: true
             # Intelligence Module
             - name: INTELLIGENCE_URL
