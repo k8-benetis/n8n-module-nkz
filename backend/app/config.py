@@ -33,11 +33,6 @@ class Settings(BaseSettings):
     # Integration Service URLs
     # ==========================================================================
 
-    # n8n (internal cluster URL for backend-to-n8n API calls)
-    n8n_url: str = "http://n8n-service:5678"
-    # n8n public URL (for frontend "Open n8n" button, external access via ingress)
-    n8n_public_url: str = "https://n8n.nekazari.robotika.cloud"
-    n8n_api_key: str = ""
     n8n_encryption_key: str = ""
 
     # Intelligence Module

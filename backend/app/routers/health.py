@@ -67,7 +67,7 @@ async def get_integrations_health(
     
     # Check all services
     services = [
-        ("n8n", "n8n Core", settings.n8n_url, "/healthz"),
+        ("n8n", "n8n Core", "", "/healthz"),  # n8n_url resolved per tenant (Phase 1)
         ("intelligence", "Intelligence AI", settings.intelligence_url, "/health"),
         ("sentinel", "Sentinel/NDVI", settings.ndvi_worker_url, "/health"),
         ("notifications", "Notifications", settings.email_service_url, "/health"),
