@@ -9,7 +9,7 @@ repo: nkz-os/n8n-module-nkz
 
 Each tenant gets their own isolated n8n instance. Enterprise tenants get it
 included in their plan. Non-enterprise tenants can purchase it as a Stripe
-addon (29€/month). Provisioning is automatic via K8s Python client. Grace
+addon (4.99€/month). Provisioning is automatic via K8s Python client. Grace
 period of 30 days on cancel/unpaid before data is purged.
 
 The existing shared n8n instance (`n8n.nekazari.robotika.cloud`) remains
@@ -26,7 +26,7 @@ Tenant instances are completely separate.
 │  ┌─────────────────────────────────────────────┐ │
 │  │ none → "Activar n8n"                        │ │
 │  │   enterprise → provisiona directo            │ │
-│  │   no enterprise → Stripe Checkout (29€/mes)  │ │
+│  │   no enterprise → Stripe Checkout (4.99€/mes)  │ │
 │  │                                              │ │
 │  │ active → URL, creds, "Abrir n8n"            │ │
 │  │ suspended → "Reactiva suscripción"           │ │
@@ -62,7 +62,7 @@ Tenant instances are completely separate.
 ┌──────────────────────▼───────────────────────────┐
 │ Stripe                                            │
 │                                                   │
-│  Product: "n8n Instance" (29€/mes)                │
+│  Product: "n8n Instance" (4.99€/mes)                │
 │  Webhook → tenant-webhook → n8n-nkz backend       │
 │  ┌─────────────────────────────────────────────┐ │
 │  │ checkout.session.completed → provision       │ │
@@ -95,7 +95,7 @@ Tenant instances are completely separate.
 ### Product
 
 - Name: "n8n Instance"
-- Price: 29€/month (configurable via `N8N_ADDON_PRICE_EUR` env var)
+- Price: 4.99€/month (configurable via `N8N_ADDON_PRICE_EUR` env var)
 - Metadata: `module_id: n8n-nkz`
 - Not a plan — an addon. Tenant keeps their current plan + adds n8n.
 
@@ -330,7 +330,7 @@ Adds `provisionStatus` to the returned state:
 │                                         │
 │ ┌─────────────────────────────────────┐ │
 │ │ [Activar n8n]                       │ │
-│ │ Si no eres enterprise: $29/mes      │ │
+│ │ Si no eres enterprise: 4.99€/mes      │ │
 │ │ Si eres enterprise: Incluido        │ │
 │ └─────────────────────────────────────┘ │
 └─────────────────────────────────────────┘
