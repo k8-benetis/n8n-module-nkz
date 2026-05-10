@@ -59,11 +59,12 @@ interface WorkflowItem {
 const ModuleApp: React.FC = () => {
   const { t } = useTranslation('n8n');
   const n8nUrl = useN8nUrl();
-  const { config, saveConfig, testConnection, testResult, isSaving, isTesting, error, isAdmin } = useTenantConfig();
+  const {
+    config, error, isAdmin,
+    provisionStatus, isProvisioning, provisionError,
+    startProvision, cancelSubscription,
+  } = useTenantConfig();
   const [settingsOpen, setSettingsOpen] = useState(!config.has_config);
-  const [formUrl, setFormUrl] = useState(config.n8n_url || '');
-  const [formKey, setFormKey] = useState('');
-  const [showKey, setShowKey] = useState(false);
   const [integrations] = useState<IntegrationStatus[]>([
     {
       id: 'n8n',
@@ -232,9 +233,9 @@ const ModuleApp: React.FC = () => {
                   <Settings className="w-4 h-4" />
                   {t('settings.expand')}
                 </button>
-              ) : n8nUrl ? (
+              ) : n8nUrl || provisionStatus.n8n_url ? (
                 <a
-                  href={n8nUrl}
+                  href={n8nUrl || provisionStatus.n8n_url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors"
@@ -250,86 +251,154 @@ const ModuleApp: React.FC = () => {
         </div>
       </div>
 
-      {/* Settings Panel (TenantAdmin only) */}
+      {/* n8n Provisioning Panel (TenantAdmin only) */}
       {isAdmin && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
           <div className="bg-white rounded-lg shadow border border-orange-200">
-            <button
-              onClick={() => setSettingsOpen(!settingsOpen)}
-              className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50 rounded-t-lg"
-            >
+            <div className="px-4 py-3 border-b border-orange-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Settings className="w-4 h-4 text-orange-500" />
-                <span className="text-sm font-medium text-gray-700">{t('settings.expand')}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  n8n Instance
+                </span>
               </div>
-              <span className="text-gray-400 text-xs">{settingsOpen ? '▲' : '▼'}</span>
-            </button>
+              {provisionStatus.status === 'active' && (
+                <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                  {t('settings.activeInstance')}
+                </span>
+              )}
+              {provisionStatus.status === 'in_progress' && (
+                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                  ⏳
+                </span>
+              )}
+            </div>
 
-            {settingsOpen && (
-              <div className="px-4 pb-4 border-t border-orange-100 pt-4 space-y-3">
-                <p className="text-xs text-gray-500">{t('settings.subtitle')}</p>
-
+            <div className="px-4 py-4 space-y-3">
+              {/* STATE: none */}
+              {provisionStatus.status === 'none' && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">{t('settings.urlLabel')}</label>
-                  <input
-                    type="url"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder={t('settings.urlPlaceholder')}
-                    value={formUrl}
-                    onChange={(e) => setFormUrl(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">{t('settings.apiKeyLabel')}</label>
-                  <div className="flex gap-2">
-                    <input
-                      type={showKey ? 'text' : 'password'}
-                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      placeholder={t('settings.apiKeyPlaceholder')}
-                      value={formKey}
-                      onChange={(e) => setFormKey(e.target.value)}
-                    />
-                    <button
-                      onClick={() => setShowKey(!showKey)}
-                      className="px-3 py-2 text-xs text-gray-500 hover:bg-gray-100 rounded-lg"
-                      type="button"
-                    >
-                      {showKey ? t('settings.hideKey') : t('settings.showKey')}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
+                  <p className="text-sm text-gray-600 mb-3">
+                    {provisionStatus.is_enterprise
+                      ? t('settings.activateEnterprise')
+                      : t('settings.activatePaid')}
+                  </p>
                   <button
-                    onClick={async () => { await testConnection(formUrl, formKey); }}
-                    disabled={isTesting || !formUrl || !formKey}
-                    className="px-4 py-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg disabled:opacity-50"
-                  >
-                    {isTesting ? '...' : t('settings.testButton')}
-                  </button>
-                  <button
-                    onClick={async () => { try { await saveConfig(formUrl, formKey); } catch {} }}
-                    disabled={isSaving || !formUrl || !formKey}
+                    onClick={startProvision}
+                    disabled={isProvisioning}
                     className="px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg disabled:opacity-50"
                   >
-                    {isSaving ? '...' : t('settings.saveButton')}
+                    {isProvisioning ? '...' : t('settings.activateEnterprise').startsWith('Activate') ? 'Activate n8n' : 'Activar n8n'}
                   </button>
                 </div>
+              )}
 
-                {testResult && (
-                  <div className={`text-xs px-3 py-2 rounded-lg ${testResult.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                    {testResult.ok
-                      ? `${t('settings.testSuccess')} (${testResult.latency_ms}ms)`
-                      : `${t('settings.testFailure')}: ${testResult.message || ''}`}
+              {/* STATE: in_progress */}
+              {provisionStatus.status === 'in_progress' && (
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <RefreshCw className="w-4 h-4 animate-spin text-orange-500" />
+                  {t('settings.provisioningInProgress')}
+                </div>
+              )}
+
+              {/* STATE: active */}
+              {provisionStatus.status === 'active' && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">URL</label>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        {provisionStatus.n8n_url}
+                      </code>
+                      <a
+                        href={provisionStatus.n8n_url || '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-orange-500 hover:text-orange-600"
+                      >
+                        {t('settings.openInstance')} ↗
+                      </a>
+                    </div>
                   </div>
-                )}
+                  {provisionStatus.username && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        {t('settings.usernameLabel')}
+                      </label>
+                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        {provisionStatus.username}
+                      </code>
+                    </div>
+                  )}
+                  <button
+                    onClick={cancelSubscription}
+                    className="px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg"
+                  >
+                    {t('settings.cancelSubscription')}
+                  </button>
+                </div>
+              )}
 
-                {error && (
-                  <div className="text-xs px-3 py-2 rounded-lg bg-red-50 text-red-700">{error}</div>
-                )}
-              </div>
-            )}
+              {/* STATE: suspended */}
+              {provisionStatus.status === 'suspended' && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-2 rounded-lg">
+                    <AlertCircle className="w-4 h-4" />
+                    <div>
+                      <p className="text-sm font-medium">{t('settings.suspendedTitle')}</p>
+                      <p className="text-xs">{t('settings.suspendedDesc')}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={startProvision}
+                    className="px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg"
+                  >
+                    {t('settings.manageSubscription')}
+                  </button>
+                </div>
+              )}
+
+              {/* STATE: grace_period */}
+              {provisionStatus.status === 'grace_period' && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-red-700 bg-red-50 px-3 py-2 rounded-lg">
+                    <AlertCircle className="w-4 h-4" />
+                    <div>
+                      <p className="text-sm font-medium">{t('settings.gracePeriodTitle')}</p>
+                      <p className="text-xs">
+                        {t('settings.gracePeriodDesc')
+                          .replace('{days}', String(provisionStatus.days_remaining || 0))}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={startProvision}
+                    className="px-4 py-2 text-sm text-white bg-orange-500 hover:bg-orange-600 rounded-lg"
+                  >
+                    {t('settings.reactivateSubscription')}
+                  </button>
+                </div>
+              )}
+
+              {/* STATE: error */}
+              {provisionStatus.status === 'error' && (
+                <div className="flex items-center gap-2 text-red-700 bg-red-50 px-3 py-2 rounded-lg">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-sm">{provisionError || t('settings.errorProvisioning')}</span>
+                  <button
+                    onClick={startProvision}
+                    className="ml-auto px-3 py-1 text-xs text-red-600 bg-red-100 hover:bg-red-200 rounded"
+                  >
+                    {t('settings.retry')}
+                  </button>
+                </div>
+              )}
+
+              {/* Existing config error (from legacy panel) */}
+              {error && (
+                <div className="text-xs px-3 py-2 rounded-lg bg-red-50 text-red-700">{error}</div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -485,11 +554,11 @@ const ModuleApp: React.FC = () => {
                 In production, the module integrates into the Unified Viewer via slots for 
                 real-time workflow status and execution monitoring.
               </p>
-              {n8nUrl ? (
+              {n8nUrl || provisionStatus.n8n_url ? (
                 <p className="text-xs text-blue-600 mt-2">
                   Access the full n8n interface at{' '}
-                  <a href={n8nUrl} className="underline" target="_blank" rel="noopener">
-                    {n8nUrl.replace('https://', '')}
+                  <a href={n8nUrl || provisionStatus.n8n_url || '#'} className="underline" target="_blank" rel="noopener">
+                    {(n8nUrl || provisionStatus.n8n_url || '').replace('https://', '')}
                   </a>
                 </p>
               ) : (
