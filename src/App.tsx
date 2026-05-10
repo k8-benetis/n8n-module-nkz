@@ -261,6 +261,15 @@ const ModuleApp: React.FC = () => {
                 <span className="text-sm font-medium text-gray-700">
                   n8n Instance
                 </span>
+                <a
+                  href="https://github.com/nkz-os/n8n-module-nkz/blob/main/docs/connect-n8n.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-gray-400 hover:text-orange-500 ml-2"
+                  title="Documentation"
+                >
+                  Docs ↗
+                </a>
               </div>
               {provisionStatus.status === 'active' && (
                 <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
