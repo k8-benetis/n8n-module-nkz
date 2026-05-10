@@ -38,7 +38,8 @@ class Settings(BaseSettings):
     # n8n public URL (for frontend "Open n8n" button, external access via ingress)
     n8n_public_url: str = "https://n8n.nekazari.robotika.cloud"
     n8n_api_key: str = ""
-    
+    n8n_encryption_key: str = ""
+
     # Intelligence Module
     intelligence_url: str = "http://intelligence-api-service:8000"
     intelligence_api_prefix: str = "/api/intelligence"
