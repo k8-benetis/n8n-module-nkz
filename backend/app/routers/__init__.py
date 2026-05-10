@@ -12,6 +12,7 @@ from app.routers import notifications
 from app.routers import odoo
 from app.routers import ros2
 from app.routers import webhooks
+from app.routers import internal_n8n
 
 __all__ = [
     "health",
@@ -22,4 +23,5 @@ __all__ = [
     "odoo",
     "ros2",
     "webhooks",
+    "internal_n8n",
 ]
