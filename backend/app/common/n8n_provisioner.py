@@ -2,6 +2,7 @@
 
 import secrets
 import logging
+from datetime import datetime, timezone
 from kubernetes import client, config
 from app.common.sanitize import n8n_resource_name, n8n_db_name, n8n_host
 from app.common.fernet_crypto import encrypt_token
@@ -335,7 +336,7 @@ def suspend_n8n_tenant(tenant_id: str) -> bool:
 
         config = get_tenant_config(tenant_id) or {}
         config["provisioning_status"] = "suspended"
-        config["suspended_at"] = None
+        config["suspended_at"] = datetime.now(timezone.utc).isoformat()
         upsert_tenant_config(tenant_id, config)
         return True
     except Exception as e:
@@ -381,7 +382,7 @@ def start_grace_period_n8n_tenant(tenant_id: str) -> bool:
 
         config = get_tenant_config(tenant_id) or {}
         config["provisioning_status"] = "grace_period"
-        config["suspended_at"] = None
+        config["suspended_at"] = datetime.now(timezone.utc).isoformat()
         upsert_tenant_config(tenant_id, config)
         return True
     except Exception as e:
