@@ -54,6 +54,28 @@ export function useModuleApi() {
     getN8nUrl: (): Promise<string> =>
       client.get('/n8n/url').then((data: any) => data.url),
 
+    /** Get tenant n8n configuration (TenantAdmin only) */
+    getTenantConfig: (): Promise<{
+      n8n_url: string | null;
+      n8n_api_key_masked: string | null;
+      has_config: boolean;
+    }> => client.get('/tenant/config'),
+
+    /** Save tenant n8n configuration (TenantAdmin only) */
+    saveTenantConfig: (data: { n8n_url: string; n8n_api_key: string }): Promise<{
+      n8n_url: string | null;
+      n8n_api_key_masked: string | null;
+      has_config: boolean;
+    }> => client.put('/tenant/config', data),
+
+    /** Test n8n connection (TenantAdmin only) */
+    testN8nConnection: (data: { n8n_url: string; n8n_api_key: string }): Promise<{
+      ok: boolean;
+      status_code: number | null;
+      message: string | null;
+      latency_ms: number | null;
+    }> => client.post('/tenant/config/test', data),
+
     // =========================================================================
     // Health & Status
     // =========================================================================
