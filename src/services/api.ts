@@ -77,6 +77,31 @@ export function useModuleApi() {
     }> => client.post('/tenant/config/test', data),
 
     // =========================================================================
+    // Provisioning
+    // =========================================================================
+
+    /** Start n8n provisioning. Returns checkout URL or status. */
+    provisionN8n: (): Promise<{
+      status: string;
+      checkout_url: string | null;
+      message: string | null;
+    }> => client.post('/tenant/provision'),
+
+    /** Get n8n provisioning status. */
+    getProvisionStatus: (): Promise<{
+      status: string;
+      n8n_url: string | null;
+      username: string | null;
+      suspended_at: string | null;
+      days_remaining: number | null;
+      is_enterprise: boolean;
+    }> => client.get('/tenant/provision/status'),
+
+    /** Cancel n8n subscription / start grace period. */
+    cancelN8nProvision: (): Promise<{ ok: boolean }> =>
+      client.delete('/tenant/provision'),
+
+    // =========================================================================
     // Health & Status
     // =========================================================================
 
