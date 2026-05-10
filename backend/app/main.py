@@ -20,7 +20,9 @@ from app.routers import (
     ros2,
     webhooks,
     tenant_config,
+    internal_n8n,
 )
+from app.common.n8n_suspension_manager import start_scheduler
 
 
 @asynccontextmanager
@@ -33,9 +35,13 @@ async def lifespan(app: FastAPI):
     print(f"   Debug Mode: {settings.debug}")
     print(f"   n8n URL: per-tenant (no global)")
     print(f"   Intelligence URL: {settings.intelligence_url}")
-    
+
+    scheduler = start_scheduler()
+    print(f"   Scheduler: n8n grace period check every 24h")
+
     yield
-    
+
+    scheduler.shutdown()
     # Shutdown
     print(f"👋 {settings.app_name} shutting down...")
 
@@ -99,6 +105,7 @@ Use Bearer authentication with your access token.
     app.include_router(ros2.router, prefix=settings.api_prefix, tags=["ROS2 Robotics"])
     app.include_router(webhooks.router, prefix=settings.api_prefix, tags=["Webhooks"])
     app.include_router(tenant_config.router, prefix=settings.api_prefix, tags=["Tenant Config"])
+    app.include_router(internal_n8n.router, tags=["Internal n8n"])
 
     return app
 
