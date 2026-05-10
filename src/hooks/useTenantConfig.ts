@@ -8,6 +8,15 @@ interface TenantConfig {
   has_config: boolean;
 }
 
+interface ProvisionStatus {
+  status: "none" | "in_progress" | "active" | "suspended" | "grace_period" | "error";
+  n8n_url: string | null;
+  username: string | null;
+  suspended_at: string | null;
+  days_remaining: number | null;
+  is_enterprise: boolean;
+}
+
 export function useTenantConfig() {
   const { isAuthenticated, hasRole } = useAuth();
   const api = useModuleApi();
@@ -17,6 +26,12 @@ export function useTenantConfig() {
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string | null; latency_ms: number | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [provisionStatus, setProvisionStatus] = useState<ProvisionStatus>({
+    status: "none", n8n_url: null, username: null,
+    suspended_at: null, days_remaining: null, is_enterprise: false,
+  });
+  const [isProvisioning, setIsProvisioning] = useState(false);
+  const [provisionError, setProvisionError] = useState<string | null>(null);
 
   const isAdmin = hasRole('TenantAdmin') || hasRole('PlatformAdmin');
 
@@ -64,6 +79,47 @@ export function useTenantConfig() {
     }
   }, [api]);
 
+  const loadProvisionStatus = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const data = await api.getProvisionStatus() as ProvisionStatus;
+      setProvisionStatus(data);
+    } catch (e: any) {
+      setProvisionError(e?.message || 'Failed to load status');
+    }
+  }, [isAuthenticated, api]);
+
+  useEffect(() => {
+    loadProvisionStatus();
+  }, [loadProvisionStatus]);
+
+  const startProvision = useCallback(async () => {
+    setIsProvisioning(true);
+    setProvisionError(null);
+    try {
+      const result = await api.provisionN8n();
+      if (result.checkout_url) {
+        window.location.href = result.checkout_url;
+        return;
+      }
+      setProvisionStatus(prev => ({ ...prev, status: "in_progress" }));
+    } catch (e: any) {
+      setProvisionError(e?.message || 'Failed to start provisioning');
+    } finally {
+      setIsProvisioning(false);
+    }
+  }, [api]);
+
+  const cancelSubscription = useCallback(async () => {
+    setProvisionError(null);
+    try {
+      await api.cancelN8nProvision();
+      await loadProvisionStatus();
+    } catch (e: any) {
+      setProvisionError(e?.message || 'Failed to cancel');
+    }
+  }, [api, loadProvisionStatus]);
+
   return {
     config,
     saveConfig,
@@ -73,5 +129,11 @@ export function useTenantConfig() {
     isTesting,
     error,
     isAdmin,
+    provisionStatus,
+    isProvisioning,
+    provisionError,
+    startProvision,
+    cancelSubscription,
+    loadProvisionStatus,
   };
 }
