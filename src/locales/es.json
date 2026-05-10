@@ -49,5 +49,24 @@
     "expand": "Expandir",
     "noExecutionsFound": "No se han encontrado ejecuciones",
     "failedToLoad": "No se han podido cargar las ejecuciones"
+  },
+  "settings": {
+    "title": "Configuracion n8n",
+    "subtitle": "Conecta tu propia instancia de n8n",
+    "urlLabel": "URL de n8n",
+    "apiKeyLabel": "API Key",
+    "testButton": "Probar conexion",
+    "saveButton": "Guardar",
+    "showKey": "Mostrar",
+    "hideKey": "Ocultar",
+    "testSuccess": "Conexion OK",
+    "testFailure": "Error de conexion",
+    "saveSuccess": "Configuracion guardada",
+    "saveFailure": "Error al guardar",
+    "notConfigured": "Configura tu instancia n8n para empezar",
+    "expand": "Configuracion n8n (solo admin)",
+    "noAdminAccess": "Solo administradores del tenant pueden configurar n8n",
+    "urlPlaceholder": "https://n8n.mi-empresa.com",
+    "apiKeyPlaceholder": "n8n_api_..."
   }
 }
