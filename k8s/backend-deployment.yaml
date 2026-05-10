@@ -53,16 +53,19 @@ spec:
               value: "nekazari"
             - name: JWT_AUDIENCE
               value: "account"
-            # n8n Configuration
-            - name: N8N_URL
-              value: "http://n8n-service:5678"
-            - name: N8N_PUBLIC_URL
-              value: "https://n8n.nekazari.robotika.cloud"
-            - name: N8N_API_KEY
+            # Database for tenant config storage
+            - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: n8n-secret
-                  key: api-key
+                  name: postgresql-secret
+                  key: database-url
+                  optional: true
+            # Fernet encryption key for API key at rest
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-nkz-secret
+                  key: encryption-key
                   optional: true
             # Intelligence Module
             - name: INTELLIGENCE_URL
