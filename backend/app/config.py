@@ -35,6 +35,17 @@ class Settings(BaseSettings):
 
     n8n_encryption_key: str = ""
 
+    # Stripe
+    stripe_secret_key: str = ""
+    stripe_publishable_key: str = ""
+    n8n_addon_price_eur: float = 4.99
+    n8n_addon_price_id: str = ""  # Stripe Price ID
+
+    # Provisioning
+    n8n_grace_period_days: int = 30
+    n8n_instance_image: str = "n8nio/n8n:latest"
+    frontend_url: str = "https://nekazari.robotika.cloud"
+
     # Intelligence Module
     intelligence_url: str = "http://intelligence-api-service:8000"
     intelligence_api_prefix: str = "/api/intelligence"

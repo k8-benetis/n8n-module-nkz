@@ -22,6 +22,15 @@ asyncpg>=0.29.0
 # Encryption
 cryptography>=42.0
 
+# K8s provisioning
+kubernetes>=30.0.0
+
+# Scheduling
+APScheduler>=3.10.0
+
+# Payments
+stripe>=9.0.0
+
 # Testing
 pytest>=7.4.0
 pytest-asyncio>=0.23.0
