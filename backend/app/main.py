@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     print(f"🚀 {settings.app_name} v{settings.app_version} starting...")
     print(f"   API Prefix: {settings.api_prefix}")
     print(f"   Debug Mode: {settings.debug}")
-    print(f"   n8n URL: {settings.n8n_url}")
+    print(f"   n8n URL: per-tenant (no global)")
     print(f"   Intelligence URL: {settings.intelligence_url}")
     
     yield
