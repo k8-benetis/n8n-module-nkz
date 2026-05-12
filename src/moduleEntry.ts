@@ -1,3 +1,4 @@
+import { defineModule } from "@nekazari/module-kit";
 import './i18n';
 import App from './App';
 import { WorkflowStatusPanel } from './components/slots/WorkflowStatusPanel';
