@@ -11,16 +11,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nekazari/design-tokens": "^0.1.0-alpha.0",
-    "@nekazari/sdk": "^1.0.5",
-    "@nekazari/ui-kit": "^1.0.2-alpha.4",
     "lucide-react": "^0.424.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0"
   },
   "devDependencies": {
+    "@nekazari/design-tokens": "^0.1.0-alpha.0",
     "@nekazari/module-builder": "^1.0.0",
+    "@nekazari/module-kit": "^0.1.1",
+    "@nekazari/sdk": "^1.1.0",
+    "@nekazari/ui-kit": "^1.0.2-alpha.4",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
@@ -28,7 +29,6 @@
     "postcss": "^8.4.39",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.2.2",
-    "vite": "^5.3.1",
-    "@nekazari/module-kit": "^0.1.0"
+    "vite": "^5.3.1"
   }
 }

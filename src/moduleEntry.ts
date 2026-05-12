@@ -1,4 +1,4 @@
-import { defineModule } from "@nekazari/module-kit";
+import { defineModule } from '@nekazari/module-kit';
 import './i18n';
 import App from './App';
 import { WorkflowStatusPanel } from './components/slots/WorkflowStatusPanel';
@@ -7,13 +7,20 @@ import { IntegrationStatus } from './components/slots/IntegrationStatus';
 import { WebhookConfigPanel } from './components/slots/WebhookConfigPanel';
 import { NotificationsPanel } from './components/slots/NotificationsPanel';
 
+const MODULE_ID = 'n8n-nkz';
+
+const moduleConfig = defineModule({
+  id: MODULE_ID,
+  displayName: 'n8n Integration Hub',
+  accent: { base: '#FF6D00', soft: '#FFE0B2', strong: '#E65100' },
+  hostApiVersion: '^2.0.0',
+  api: { basePath: '/api/n8n' },
+});
+
 const NKZ = (window as any).__NKZ__;
 
-console.log('[nkz-module-n8n] Bundle loaded v1.0.0');
-console.log('[nkz-module-n8n] __NKZ__:', typeof NKZ);
-
 NKZ.register({
-  id: 'n8n-nkz',
+  id: MODULE_ID,
   version: '1.0.0',
   main: App,
   viewerSlots: [
@@ -43,4 +50,4 @@ NKZ.register({
   ],
 });
 
-console.log('[nkz-module-n8n] Registered — id=n8n-nkz, version=1.0.0, main page + 5 viewer slots');
+export default moduleConfig;
