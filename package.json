@@ -4,7 +4,10 @@
   "description": "n8n Integration Hub - Workflow orchestration module for Nekazari Platform",
   "license": "AGPL-3.0",
   "type": "module",
-  "main": "./src/App.tsx",
+  "main": "./src/Module.tsx",
+  "nkz": {
+    "moduleId": "n8n-nkz"
+  },
   "scripts": {
     "dev": "vite --port 5003",
     "build:module": "vite build",
@@ -18,8 +21,8 @@
   },
   "devDependencies": {
     "@nekazari/design-tokens": "^0.1.0-alpha.0",
-    "@nekazari/module-builder": "^1.0.0",
-    "@nekazari/module-kit": "^0.1.1",
+    "@nekazari/module-builder": "^2.0.0",
+    "@nekazari/module-kit": "^0.6.0",
     "@nekazari/sdk": "^1.1.0",
     "@nekazari/ui-kit": "^1.0.2-alpha.4",
     "@types/react": "^18.3.3",
