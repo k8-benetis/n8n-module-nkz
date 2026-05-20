@@ -12,7 +12,6 @@ from functools import lru_cache
 from fastapi import HTTPException, Depends, Header, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, jwk, JWTError
-from jose.exceptions import JWKError
 
 from app.config import get_settings, Settings
 
@@ -133,41 +132,75 @@ async def get_current_user(
         # Decode header to get key ID
         unverified_header = jwt.get_unverified_header(token)
         kid = unverified_header.get("kid")
-        
+
         if not kid:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token missing key ID"
             )
-        
+
         # Get signing key from JWKS
         jwks_client = get_jwks_client()
         key_data = await jwks_client.get_signing_key(kid)
-        
+
         # Construct public key
         public_key = jwk.construct(key_data)
-        
-        # Verify and decode token
+
+        # Build issuer whitelist (internal + public, with/without /auth)
+        allowed_issuers = set()
+        realm_suffix = f"/realms/{settings.keycloak_realm}"
+
+        for base_url in [settings.keycloak_url, settings.keycloak_internal_url]:
+            if not base_url:
+                continue
+            clean = base_url.rstrip("/")
+            if "/auth" not in clean and not clean.endswith("/realms"):
+                clean = f"{clean}/auth"
+            allowed_issuers.add(f"{clean}{realm_suffix}")
+            # Also add without /auth variant (modern Keycloak)
+            allowed_issuers.add(f"{clean.replace('/auth', '')}{realm_suffix}")
+
+        # Verify and decode token (verify_iss=False — manual check below)
         payload = jwt.decode(
             token,
             public_key,
             algorithms=["RS256"],
             audience=settings.jwt_audience,
-            issuer=settings.jwt_issuer_url,
+            options={"verify_iss": False},
         )
-        
+
+        # Manual issuer validation with /auth flexibility
+        token_iss = payload.get("iss", "")
+        is_valid = token_iss in allowed_issuers
+        if not is_valid and token_iss:
+            clean_iss = token_iss.replace("/auth/realms/", "/realms/")
+            for base in list(allowed_issuers):
+                clean_base = base.replace("/auth/realms/", "/realms/")
+                if clean_base == clean_iss:
+                    is_valid = True
+                    break
+
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid token issuer",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         return TokenPayload(payload)
-        
+
     except JWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid token: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except JWKError as e:
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Key error: {str(e)}",
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Authentication service temporarily unavailable",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

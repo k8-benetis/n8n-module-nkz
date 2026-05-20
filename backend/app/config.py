@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     
     # Keycloak / JWT Authentication
     keycloak_url: str = "https://auth.robotika.cloud/auth"
+    keycloak_internal_url: str = ""  # Internal K8s service URL (e.g. http://keycloak:8080/auth)
     keycloak_realm: str = "nekazari"
     jwt_audience: str = "account"
     jwt_issuer: str = ""  # Auto-derived from keycloak_url + realm if empty
