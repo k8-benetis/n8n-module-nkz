@@ -51,3 +51,14 @@ env/
 
 # Internal development docs (not public)
 docs/superpowers/
+docs/internal/
+internal-docs/
+.ai/
+docs/plans/
+docs/specs/
+docs/audits/
+*_PLAN.md
+*_SPEC.md
+*HANDOVER*.md
+HANDOFF.md
+CURRENT_STATE.md
