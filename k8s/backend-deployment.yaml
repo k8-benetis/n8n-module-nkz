@@ -49,9 +49,9 @@ spec:
               value: "/api/n8n-nkz"
             # Keycloak Configuration
             - name: KEYCLOAK_URL
-              value: "https://auth.robotika.cloud/auth"
+              value: "http://keycloak-service:8080/auth"
             - name: KEYCLOAK_INTERNAL_URL
-              value: "http://keycloak:8080/auth"
+              value: "http://keycloak-service:8080/auth"
             - name: KEYCLOAK_REALM
               value: "nekazari"
             - name: JWT_AUDIENCE
