@@ -4,6 +4,14 @@
   "display_name": "n8n Integration Hub",
   "version": "1.0.0",
   "description": "Workflow Orchestration Hub - Integrates n8n with Nekazari platform services including Sentinel/NDVI analysis, AI predictions, notifications, Odoo ERP, and ROS2 robotics",
+  "description_i18n": {
+    "es": "Hub de Orquestación de Flujos de Trabajo — Integra n8n con los servicios de la plataforma Nekazari incluyendo análisis Sentinel/NDVI, predicciones IA, notificaciones, Odoo ERP y robótica ROS2",
+    "en": "Workflow Orchestration Hub - Integrates n8n with Nekazari platform services including Sentinel/NDVI analysis, AI predictions, notifications, Odoo ERP, and ROS2 robotics",
+    "eu": "Lan-fluxuen Orkestrazio Hub-a — n8n Nekazari plataformaren zerbitzuekin integratzen du, Sentinel/NDVI analisia, IA iragarpenak, jakinarazpenak, Odoo ERP eta ROS2 robotika barne",
+    "fr": "Hub d'Orchestration de Flux de Travail — Intègre n8n avec les services de la plateforme Nekazari incluant l'analyse Sentinel/NDVI, les prédictions IA, les notifications, Odoo ERP et la robotique ROS2",
+    "pt": "Hub de Orquestração de Fluxos de Trabalho — Integra o n8n com os serviços da plataforma Nekazari incluindo análise Sentinel/NDVI, previsões IA, notificações, Odoo ERP e robótica ROS2",
+    "ca": "Hub d'Orquestració de Fluxos de Treball — Integra n8n amb els serveis de la plataforma Nekazari incloent anàlisi Sentinel/NDVI, prediccions IA, notificacions, Odoo ERP i robòtica ROS2"
+  },
   "short_description": "n8n workflow automation and service integration",
   "accent": {
     "base": "#F43F5E",
