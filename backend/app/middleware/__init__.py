@@ -1,262 +1,84 @@
 """
 n8n Integration Hub Backend - Authentication Middleware
 
-JWT validation middleware for Keycloak tokens.
-Accepts both Bearer token and nkz_token cookie (httpOnly).
-Compatible with Nekazari platform authentication.
+Delegates JWT validation to the api-gateway via nkz-platform-sdk.
+Maintains backwards compatibility with existing routers.
 """
 
-import httpx
 from typing import Optional
-from functools import lru_cache
-from fastapi import HTTPException, Depends, Header, Request, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, jwk, JWTError
-
-from app.config import get_settings, Settings
-
-
-# Security scheme
-security = HTTPBearer(auto_error=False)
-
-
-class JWKSClient:
-    """JWKS client for fetching and caching public keys from Keycloak."""
-    
-    def __init__(self, jwks_url: str):
-        self.jwks_url = jwks_url
-        self._keys: dict = {}
-    
-    async def get_signing_key(self, kid: str) -> dict:
-        """Get signing key by key ID."""
-        if kid not in self._keys:
-            await self._refresh_keys()
-        
-        if kid not in self._keys:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unable to find signing key"
-            )
-        
-        return self._keys[kid]
-    
-    async def _refresh_keys(self):
-        """Fetch JWKS from Keycloak."""
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(self.jwks_url, timeout=10.0)
-                response.raise_for_status()
-                jwks_data = response.json()
-                
-                for key_data in jwks_data.get("keys", []):
-                    kid = key_data.get("kid")
-                    if kid:
-                        self._keys[kid] = key_data
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Failed to fetch JWKS: {str(e)}"
-            )
-
-
-@lru_cache()
-def get_jwks_client() -> JWKSClient:
-    """Get cached JWKS client."""
-    settings = get_settings()
-    return JWKSClient(settings.jwks_url)
-
+from fastapi import Header, Depends, HTTPException, status
+from nkz_platform_sdk.auth import require_auth, AuthContext
 
 class TokenPayload:
-    """Validated token payload."""
+    """Wrapper for AuthContext to maintain backwards compatibility with existing routers."""
+    def __init__(self, context: AuthContext):
+        self._context = context
     
-    def __init__(self, payload: dict):
-        self.sub: str = payload.get("sub", "")
-        self.email: str = payload.get("email", "")
-        self.preferred_username: str = payload.get("preferred_username", "")
-        self.tenant_id: Optional[str] = payload.get("tenant_id")
-        self.realm_access: dict = payload.get("realm_access", {})
-        self.resource_access: dict = payload.get("resource_access", {})
-        self._payload = payload
+    @property
+    def tenant_id(self) -> str:
+        return self._context.tenant_id
     
     @property
     def roles(self) -> list[str]:
-        """Get user roles from realm_access."""
-        return self.realm_access.get("roles", [])
+        return list(self._context.roles)
     
     def has_role(self, role: str) -> bool:
-        """Check if user has a specific role."""
-        return role in self.roles
+        return self._context.has_role(role)
     
     def has_any_role(self, roles: list[str]) -> bool:
-        """Check if user has any of the specified roles."""
-        return any(role in self.roles for role in roles)
+        return self._context.has_any_role(roles)
 
 
-def _extract_token(
-    credentials: Optional[HTTPAuthorizationCredentials],
-    request: Request,
-) -> str | None:
-    """Extract JWT from Bearer header or nkz_token cookie."""
-    if credentials:
-        return credentials.credentials
-    cookie = request.cookies.get("nkz_token")
-    if cookie:
-        return cookie
-    return None
-
-
-async def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    request: Request = None,  # type: ignore[assignment]
-    settings: Settings = Depends(get_settings),
-) -> TokenPayload:
+async def get_current_user(context: AuthContext = require_auth()) -> TokenPayload:
     """
-    Validate JWT token and return user payload.
-    Accepts Bearer token (Authorization header) or nkz_token cookie.
-
-    Usage:
-        @router.get("/protected")
-        async def protected_route(user: TokenPayload = Depends(get_current_user)):
-            return {"user": user.email}
+    Returns the current user based on gateway-injected headers.
     """
-    token = _extract_token(credentials, request) if request else (credentials.credentials if credentials else None)
-
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    try:
-        # Decode header to get key ID
-        unverified_header = jwt.get_unverified_header(token)
-        kid = unverified_header.get("kid")
-
-        if not kid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token missing key ID"
-            )
-
-        # Get signing key from JWKS
-        jwks_client = get_jwks_client()
-        key_data = await jwks_client.get_signing_key(kid)
-
-        # Construct public key
-        public_key = jwk.construct(key_data)
-
-        # Build issuer whitelist (internal + public, with/without /auth)
-        allowed_issuers = set()
-        realm_suffix = f"/realms/{settings.keycloak_realm}"
-
-        for base_url in [settings.keycloak_url, settings.keycloak_internal_url]:
-            if not base_url:
-                continue
-            clean = base_url.rstrip("/")
-            if "/auth" not in clean and not clean.endswith("/realms"):
-                clean = f"{clean}/auth"
-            allowed_issuers.add(f"{clean}{realm_suffix}")
-            # Also add without /auth variant (modern Keycloak)
-            allowed_issuers.add(f"{clean.replace('/auth', '')}{realm_suffix}")
-
-        # Verify and decode token (verify_iss=False — manual check below)
-        payload = jwt.decode(
-            token,
-            public_key,
-            algorithms=["RS256"],
-            audience=settings.jwt_audience,
-            options={"verify_iss": False},
-        )
-
-        # Manual issuer validation with /auth flexibility
-        token_iss = payload.get("iss", "")
-        is_valid = token_iss in allowed_issuers
-        if not is_valid and token_iss:
-            clean_iss = token_iss.replace("/auth/realms/", "/realms/")
-            for base in list(allowed_issuers):
-                clean_base = base.replace("/auth/realms/", "/realms/")
-                if clean_base == clean_iss:
-                    is_valid = True
-                    break
-
-        if not is_valid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Invalid token issuer",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-        return TokenPayload(payload)
-
-    except JWTError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Authentication service temporarily unavailable",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    return TokenPayload(context)
 
 
 async def get_optional_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    settings: Settings = Depends(get_settings),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-ID"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
+    x_user_roles: Optional[str] = Header(None, alias="X-User-Roles"),
 ) -> Optional[TokenPayload]:
     """
     Same as get_current_user but returns None for unauthenticated requests.
     Useful for endpoints that work differently for authenticated vs anonymous users.
     """
-    if not credentials:
+    if not x_tenant_id or not x_user_id:
         return None
     
-    try:
-        return await get_current_user(credentials, settings)
-    except HTTPException:
-        return None
+    roles = tuple(r.strip() for r in (x_user_roles or "").split(",") if r.strip())
+    context = AuthContext(
+        tenant_id=x_tenant_id,
+        user_id=x_user_id,
+        roles=roles
+    )
+    return TokenPayload(context)
 
 
 def require_roles(*required_roles: str):
     """
     Dependency factory that requires specific roles.
-    
-    Usage:
-        @router.get("/admin-only")
-        async def admin_route(user: TokenPayload = Depends(require_roles("PlatformAdmin"))):
-            return {"admin": user.email}
     """
-    async def role_checker(
-        user: TokenPayload = Depends(get_current_user)
-    ) -> TokenPayload:
-        if not user.has_any_role(list(required_roles)):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Required roles: {', '.join(required_roles)}"
-            )
-        return user
-    
+    def role_checker(context: AuthContext = require_auth(roles=list(required_roles))) -> TokenPayload:
+        return TokenPayload(context)
     return role_checker
 
 
 def get_tenant_id(
     x_tenant_id: Optional[str] = Header(None, alias="x-tenant-id"),
     ngsild_tenant: Optional[str] = Header(None, alias="ngsild-tenant"),
-    user: TokenPayload = Depends(get_current_user),
+    context: AuthContext = require_auth(),
 ) -> str:
     """Extract tenant ID from request.
-
-    Priority: X-Tenant-ID header (from gateway) > NGSILD-Tenant header > JWT tenant_id claim.
+    
+    Priority: X-Tenant-ID header (from gateway) > NGSILD-Tenant header > gateway context tenant_id.
     """
     if x_tenant_id:
         return x_tenant_id
     if ngsild_tenant:
         return ngsild_tenant
-    if user.tenant_id:
-        return user.tenant_id
+    if context.tenant_id:
+        return context.tenant_id
     return "default"
