@@ -147,7 +147,7 @@ async def send_robot_command(
                     "robot_id": command.robotId,
                     "command": command.command,
                     "parameters": command.parameters or {},
-                    "issued_by": user.email,
+                    "issued_by": user.user_id,
                 },
                 headers={"fiware-service": tenant_id}
             )
@@ -237,7 +237,7 @@ async def create_mission(
                     "type": mission.type,
                     "parcel_ids": mission.parcelIds,
                     "parameters": mission.parameters or {},
-                    "created_by": user.email,
+                    "created_by": user.user_id,
                 },
                 headers={"fiware-service": tenant_id}
             )

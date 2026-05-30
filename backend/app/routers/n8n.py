@@ -192,8 +192,8 @@ async def execute_workflow(
     """
     execution_data = {
         "tenantId": tenant_id,
-        "userId": user.sub,
-        "userEmail": user.email,
+        "userId": user.user_id,
+        "userEmail": user.user_id,
     }
 
     if request:

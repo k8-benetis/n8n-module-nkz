@@ -63,7 +63,7 @@ async def request_prediction(
                     "entity_type": request.entityType,
                     "parameters": request.parameters or {},
                     "tenant_id": tenant_id,
-                    "user_id": user.sub,
+                    "user_id": user.user_id,
                 },
                 headers={"fiware-service": tenant_id}
             )
@@ -196,7 +196,7 @@ async def trigger_intelligence_webhook(
                     "entity_type": request.entityType,
                     "data": request.data or {},
                     "tenant_id": tenant_id,
-                    "triggered_by": user.email,
+                    "triggered_by": user.user_id,
                 },
                 headers={"fiware-service": tenant_id}
             )
