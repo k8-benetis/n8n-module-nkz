@@ -89,8 +89,11 @@ export function useTenantConfig() {
     }
   }, [isAuthenticated, api]);
 
+  // Poll provision status every 10s (not on every render — avoids rate limiting)
   useEffect(() => {
     loadProvisionStatus();
+    const interval = setInterval(loadProvisionStatus, 10000);
+    return () => clearInterval(interval);
   }, [loadProvisionStatus]);
 
   const startProvision = useCallback(async () => {

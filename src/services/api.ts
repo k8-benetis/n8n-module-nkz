@@ -10,6 +10,7 @@
  * - ROS2 robotics
  */
 
+import { useMemo } from 'react';
 import { NKZClient, useAuth } from '@nekazari/sdk';
 import type {
   N8nWorkflow,
@@ -39,11 +40,11 @@ const API_BASE = '/api/n8n-nkz';
 export function useModuleApi() {
   const { getToken, tenantId } = useAuth();
   
-  const client = new NKZClient({
+  const client = useMemo(() => new NKZClient({
     baseUrl: API_BASE,
     getToken,
     getTenantId: () => tenantId,
-  });
+  }), [getToken, tenantId]);
 
   return {
     // =========================================================================
