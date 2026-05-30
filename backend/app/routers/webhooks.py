@@ -185,7 +185,7 @@ async def test_webhook(
         "timestamp": "2025-01-12T10:00:00Z",
         "data": {
             "message": "This is a test webhook from n8n Integration Hub",
-            "triggeredBy": user.email,
+            "triggeredBy": user.user_id,
         }
     }
     

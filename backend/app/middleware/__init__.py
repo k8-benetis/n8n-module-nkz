@@ -13,18 +13,33 @@ class TokenPayload:
     """Wrapper for AuthContext to maintain backwards compatibility with existing routers."""
     def __init__(self, context: AuthContext):
         self._context = context
-    
+
     @property
     def tenant_id(self) -> str:
         return self._context.tenant_id
-    
+
+    @property
+    def user_id(self) -> str:
+        """Keycloak user ID (UUID) injected by api-gateway via X-User-ID header."""
+        return self._context.user_id
+
+    @property
+    def sub(self) -> str:
+        """Alias for user_id (backwards compatibility with JWT 'sub' claim)."""
+        return self._context.user_id
+
+    @property
+    def email(self) -> str:
+        """Returns user_id as audit identifier. The api-gateway does not forward the email claim; use user_id for audit trails."""
+        return self._context.user_id
+
     @property
     def roles(self) -> list[str]:
         return list(self._context.roles)
-    
+
     def has_role(self, role: str) -> bool:
         return self._context.has_role(role)
-    
+
     def has_any_role(self, roles: list[str]) -> bool:
         return self._context.has_any_role(roles)
 

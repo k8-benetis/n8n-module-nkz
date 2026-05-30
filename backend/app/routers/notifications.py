@@ -162,7 +162,7 @@ async def test_notification_channel(
                     json={
                         "to": request.recipient,
                         "subject": "[TEST] Nekazari Notification Test",
-                        "body": f"This is a test notification from n8n Integration Hub.\nTriggered by: {user.email}",
+                        "body": f"This is a test notification from n8n Integration Hub.\nTriggered by: {user.user_id}",
                     },
                     headers={"fiware-service": tenant_id}
                 )

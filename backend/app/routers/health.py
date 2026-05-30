@@ -2,6 +2,7 @@
 Health Router - Integration health checks
 """
 
+import time
 from typing import Optional
 from fastapi import APIRouter, Depends
 import httpx
@@ -27,9 +28,9 @@ async def get_integrations_health(
         """Check if a service is healthy."""
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                start = httpx.utils.current_timestamp()
+                start = time.time()
                 response = await client.get(f"{url}{health_path}")
-                latency = int((httpx.utils.current_timestamp() - start) * 1000)
+                latency = int((time.time() - start) * 1000)
                 
                 if response.status_code == 200:
                     return {
@@ -37,7 +38,7 @@ async def get_integrations_health(
                         "name": name,
                         "status": "healthy",
                         "latency": latency,
-                        "lastCheck": httpx.utils.current_timestamp(),
+                        "lastCheck": time.time(),
                     }
                 else:
                     return {
@@ -46,7 +47,7 @@ async def get_integrations_health(
                         "status": "degraded",
                         "latency": latency,
                         "message": f"HTTP {response.status_code}",
-                        "lastCheck": httpx.utils.current_timestamp(),
+                        "lastCheck": time.time(),
                     }
         except httpx.TimeoutException:
             return {
@@ -54,7 +55,7 @@ async def get_integrations_health(
                 "name": name,
                 "status": "unhealthy",
                 "message": "Timeout",
-                "lastCheck": httpx.utils.current_timestamp(),
+                "lastCheck": time.time(),
             }
         except Exception as e:
             return {
@@ -62,7 +63,7 @@ async def get_integrations_health(
                 "name": name,
                 "status": "unknown",
                 "message": str(e),
-                "lastCheck": httpx.utils.current_timestamp(),
+                "lastCheck": time.time(),
             }
     
     # Check all services
