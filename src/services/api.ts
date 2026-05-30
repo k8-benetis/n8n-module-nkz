@@ -10,7 +10,7 @@
  * - ROS2 robotics
  */
 
-import { useMemo } from 'react';
+import { useRef } from 'react';
 import { NKZClient, useAuth } from '@nekazari/sdk';
 import type {
   N8nWorkflow,
@@ -39,12 +39,23 @@ const API_BASE = '/api/n8n-nkz';
  */
 export function useModuleApi() {
   const { getToken, tenantId } = useAuth();
-  
-  const client = useMemo(() => new NKZClient({
-    baseUrl: API_BASE,
-    getToken,
-    getTenantId: () => tenantId,
-  }), [getToken, tenantId]);
+
+  // Keep latest getToken in a ref so the stable NKZClient always uses fresh auth
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+  const tenantIdRef = useRef(tenantId);
+  tenantIdRef.current = tenantId;
+
+  // Create the client ONCE, with callbacks that read from refs
+  const clientRef = useRef<NKZClient | null>(null);
+  if (!clientRef.current) {
+    clientRef.current = new NKZClient({
+      baseUrl: API_BASE,
+      getToken: () => getTokenRef.current(),
+      getTenantId: () => tenantIdRef.current,
+    });
+  }
+  const client = clientRef.current;
 
   return {
     // =========================================================================
