@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@nekazari/sdk';
 import { useModuleApi } from '@/services/api';
 
@@ -35,6 +35,12 @@ export function useTenantConfig() {
 
   const isAdmin = hasRole('TenantAdmin') || hasRole('PlatformAdmin');
 
+  // Use refs so the polling interval always has access to latest values
+  const apiRef = useRef(api);
+  apiRef.current = api;
+  const isAuthenticatedRef = useRef(isAuthenticated);
+  isAuthenticatedRef.current = isAuthenticated;
+
   const loadConfig = useCallback(async () => {
     if (!isAuthenticated || !isAdmin) return;
     try {
@@ -44,7 +50,7 @@ export function useTenantConfig() {
     } catch (e: any) {
       setError(e?.message || 'Failed to load config');
     }
-  }, [isAuthenticated, isAdmin]);
+  }, [isAuthenticated, isAdmin, api]);
 
   useEffect(() => {
     loadConfig();
@@ -79,22 +85,23 @@ export function useTenantConfig() {
     }
   }, [api]);
 
-  const loadProvisionStatus = useCallback(async () => {
-    if (!isAuthenticated) return;
-    try {
-      const data = await api.getProvisionStatus() as ProvisionStatus;
-      setProvisionStatus(data);
-    } catch (e: any) {
-      setProvisionError(e?.message || 'Failed to load status');
-    }
-  }, [isAuthenticated, api]);
-
-  // Poll provision status every 10s (not on every render — avoids rate limiting)
+  // Poll provision status every 10s using refs to avoid dependency loops
   useEffect(() => {
-    loadProvisionStatus();
-    const interval = setInterval(loadProvisionStatus, 10000);
+    const poll = async () => {
+      if (!isAuthenticatedRef.current) return;
+      try {
+        const data = await apiRef.current.getProvisionStatus() as ProvisionStatus;
+        setProvisionStatus(data);
+        setProvisionError(null);
+      } catch (e: any) {
+        // Silent — don't spam on rate limits or auth failures
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 10000);
     return () => clearInterval(interval);
-  }, [loadProvisionStatus]);
+  }, []); // Only mount/unmount — refs keep values fresh
 
   const startProvision = useCallback(async () => {
     setIsProvisioning(true);
@@ -117,11 +124,24 @@ export function useTenantConfig() {
     setProvisionError(null);
     try {
       await api.cancelN8nProvision();
-      await loadProvisionStatus();
+      // Re-fetch status
+      const data = await api.getProvisionStatus() as ProvisionStatus;
+      setProvisionStatus(data);
     } catch (e: any) {
       setProvisionError(e?.message || 'Failed to cancel');
     }
-  }, [api, loadProvisionStatus]);
+  }, [api]);
+
+  const loadProvisionStatusManually = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const data = await api.getProvisionStatus() as ProvisionStatus;
+      setProvisionStatus(data);
+      setProvisionError(null);
+    } catch (e: any) {
+      setProvisionError(e?.message || 'Failed to load status');
+    }
+  }, [isAuthenticated, api]);
 
   return {
     config,
@@ -137,6 +157,6 @@ export function useTenantConfig() {
     provisionError,
     startProvision,
     cancelSubscription,
-    loadProvisionStatus,
+    loadProvisionStatus: loadProvisionStatusManually,
   };
 }
