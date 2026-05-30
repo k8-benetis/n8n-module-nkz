@@ -150,9 +150,9 @@ async def start_provision(
     config = get_tenant_config(tenant_id)
 
     # Check if already provisioned
-    status = (config or {}).get("provisioning_status", "none")
-    if status in ("active", "in_progress"):
-        return ProvisionResponse(status=status, message="n8n instance already provisioned or in progress")
+    current_status = (config or {}).get("provisioning_status", "none")
+    if current_status in ("active", "in_progress"):
+        return ProvisionResponse(status=current_status, message="n8n instance already provisioned or in progress")
 
     # Determine if enterprise (free) or needs Stripe
     is_enterprise = False
