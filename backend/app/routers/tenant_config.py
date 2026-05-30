@@ -2,6 +2,7 @@
 
 import re
 import time
+import logging
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,6 +13,8 @@ from app.middleware import get_current_user, get_tenant_id, require_roles, Token
 from app.common.tenant_config_service import get_tenant_config, upsert_tenant_config, mask_api_key
 from app.common.fernet_crypto import encrypt_token, decrypt_token
 import stripe
+
+logger = logging.getLogger(__name__)
 from app.common.n8n_provisioner import provision_n8n_tenant
 from app.common.n8n_suspension_manager import handle_suspension_event
 
@@ -182,6 +185,7 @@ async def start_provision(
                 message=f"Provisioning started. URL: {result['url']}"
             )
         except Exception as e:
+            logger.exception(f"Provisioning failed for tenant {tenant_id}: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Provisioning failed: {str(e)}",
@@ -189,6 +193,7 @@ async def start_provision(
 
     # Non-enterprise: create Stripe Checkout Session
     if not settings.stripe_secret_key or not settings.n8n_addon_price_id:
+        logger.warning(f"Stripe not configured for tenant {tenant_id} (not enterprise, not PlatformAdmin)")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Stripe not configured. Contact platform admin.",
