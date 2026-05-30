@@ -35,32 +35,35 @@ export function useTenantConfig() {
 
   const isAdmin = hasRole('TenantAdmin') || hasRole('PlatformAdmin');
 
-  // Use refs so the polling interval always has access to latest values
+  // Use refs so callbacks always have access to latest values without triggering re-renders
   const apiRef = useRef(api);
   apiRef.current = api;
   const isAuthenticatedRef = useRef(isAuthenticated);
   isAuthenticatedRef.current = isAuthenticated;
+  const isAdminRef = useRef(isAdmin);
+  isAdminRef.current = isAdmin;
 
   const loadConfig = useCallback(async () => {
-    if (!isAuthenticated || !isAdmin) return;
+    if (!isAuthenticatedRef.current || !isAdminRef.current) return;
     try {
-      const data = await api.getTenantConfig();
+      const data = await apiRef.current.getTenantConfig();
       setConfig(data);
       setError(null);
     } catch (e: any) {
-      setError(e?.message || 'Failed to load config');
+      // Silent
     }
-  }, [isAuthenticated, isAdmin, api]);
+  }, []);
 
+  // Load config once on mount (refs keep values fresh)
   useEffect(() => {
     loadConfig();
-  }, [loadConfig]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const saveConfig = useCallback(async (n8n_url: string, n8n_api_key: string) => {
     setIsSaving(true);
     setError(null);
     try {
-      const data = await api.saveTenantConfig({ n8n_url, n8n_api_key });
+      const data = await apiRef.current.saveTenantConfig({ n8n_url, n8n_api_key });
       setConfig(data);
     } catch (e: any) {
       setError(e?.message || 'Failed to save config');
@@ -68,13 +71,13 @@ export function useTenantConfig() {
     } finally {
       setIsSaving(false);
     }
-  }, [api]);
+  }, []);
 
   const testConnection = useCallback(async (n8n_url: string, n8n_api_key: string) => {
     setIsTesting(true);
     setTestResult(null);
     try {
-      const result = await api.testN8nConnection({ n8n_url, n8n_api_key });
+      const result = await apiRef.current.testN8nConnection({ n8n_url, n8n_api_key });
       setTestResult(result);
       return result;
     } catch (e: any) {
@@ -83,7 +86,7 @@ export function useTenantConfig() {
     } finally {
       setIsTesting(false);
     }
-  }, [api]);
+  }, []);
 
   // Poll provision status every 10s using refs to avoid dependency loops
   useEffect(() => {
@@ -107,7 +110,7 @@ export function useTenantConfig() {
     setIsProvisioning(true);
     setProvisionError(null);
     try {
-      const result = await api.provisionN8n();
+      const result = await apiRef.current.provisionN8n();
       if (result.checkout_url) {
         window.location.href = result.checkout_url;
         return;
@@ -118,30 +121,29 @@ export function useTenantConfig() {
     } finally {
       setIsProvisioning(false);
     }
-  }, [api]);
+  }, []);
 
   const cancelSubscription = useCallback(async () => {
     setProvisionError(null);
     try {
-      await api.cancelN8nProvision();
-      // Re-fetch status
-      const data = await api.getProvisionStatus() as ProvisionStatus;
+      await apiRef.current.cancelN8nProvision();
+      const data = await apiRef.current.getProvisionStatus() as ProvisionStatus;
       setProvisionStatus(data);
     } catch (e: any) {
       setProvisionError(e?.message || 'Failed to cancel');
     }
-  }, [api]);
+  }, []);
 
   const loadProvisionStatusManually = useCallback(async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticatedRef.current) return;
     try {
-      const data = await api.getProvisionStatus() as ProvisionStatus;
+      const data = await apiRef.current.getProvisionStatus() as ProvisionStatus;
       setProvisionStatus(data);
       setProvisionError(null);
     } catch (e: any) {
       setProvisionError(e?.message || 'Failed to load status');
     }
-  }, [isAuthenticated, api]);
+  }, []);
 
   return {
     config,
