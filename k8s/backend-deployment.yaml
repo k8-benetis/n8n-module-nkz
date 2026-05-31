@@ -61,7 +61,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: postgresql-secret
-                  key: database-url
+                  key: postgres-url
                   optional: true
             # Fernet encryption key for API key at rest
             - name: N8N_ENCRYPTION_KEY
