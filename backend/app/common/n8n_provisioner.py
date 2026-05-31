@@ -4,7 +4,7 @@ import secrets
 import logging
 from datetime import datetime, timezone
 from kubernetes import client, config
-from app.common.sanitize import n8n_resource_name, n8n_db_name, n8n_host
+from app.common.sanitize import n8n_resource_name, n8n_db_name, n8n_host, sanitize_tenant_id
 from app.common.fernet_crypto import encrypt_token
 from app.common.tenant_config_service import get_tenant_config, upsert_tenant_config
 from app.common.db import get_db_connection_safe
@@ -107,6 +107,7 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
     name = n8n_resource_name(tenant_id)
     db_name = n8n_db_name(tenant_id)
     host = n8n_host(tenant_id)
+    path_prefix = f"/{sanitize_tenant_id(tenant_id)}"
     creds = generate_credentials()
 
     # 1. Create Secret (idempotent — skip if already exists from partial provision)
@@ -169,8 +170,9 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
                             image="n8nio/n8n:latest",
                             ports=[client.V1ContainerPort(container_port=5678)],
                             env=[
-                                client.V1EnvVar(name="N8N_HOST", value=host),
+                                client.V1EnvVar(name="N8N_HOST", value="nekazari.robotika.cloud"),
                                 client.V1EnvVar(name="N8N_PROTOCOL", value="https"),
+                                client.V1EnvVar(name="N8N_PATH_PREFIX", value=path_prefix),
                                 client.V1EnvVar(name="WEBHOOK_URL", value=f"https://{host}/"),
                                 client.V1EnvVar(name="N8N_BASIC_AUTH_ACTIVE", value="true"),
                                 client.V1EnvVar(
@@ -258,54 +260,7 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
         else:
             raise
 
-    # 5. Create Ingress (idempotent)
-    ingress = client.V1Ingress(
-        api_version="networking.k8s.io/v1",
-        kind="Ingress",
-        metadata=client.V1ObjectMeta(
-            name=f"{name}-ingress",
-            namespace="nekazari",
-            annotations={
-                "cert-manager.io/cluster-issuer": "letsencrypt-prod",
-                "traefik.ingress.kubernetes.io/router.entrypoints": "websecure",
-                "traefik.ingress.kubernetes.io/router.tls": "true",
-            },
-        ),
-        spec=client.V1IngressSpec(
-            tls=[
-                client.V1IngressTLS(
-                    hosts=[host],
-                    secret_name=f"{name}-tls",
-                )
-            ],
-            rules=[
-                client.V1IngressRule(
-                    host=host,
-                    http=client.V1HTTPIngressRuleValue(
-                        paths=[
-                            client.V1HTTPIngressPath(
-                                path="/",
-                                path_type="Prefix",
-                                backend=client.V1IngressBackend(
-                                    service=client.V1IngressServiceBackend(
-                                        name=f"{name}-service",
-                                        port=client.V1ServiceBackendPort(number=5678),
-                                    )
-                                ),
-                            )
-                        ]
-                    ),
-                )
-            ],
-        ),
-    )
-    try:
-        net_v1.create_namespaced_ingress("nekazari", ingress)
-    except client.ApiException as e:
-        if e.status == 409:
-            logger.info(f"Ingress {name}-ingress already exists, reusing")
-        else:
-            raise
+    # 5. NO per-tenant Ingress — routed via api-gateway path proxy (n8n.robotika.cloud/<tenant>)
 
     # 6. Create HPA (idempotent)
     hpa = client.V1HorizontalPodAutoscaler(

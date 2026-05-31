@@ -25,5 +25,6 @@ def n8n_db_name(tenant_id: str) -> str:
 
 
 def n8n_host(tenant_id: str) -> str:
-    """Generate public hostname for tenant n8n instance."""
-    return f"n8n-{sanitize_tenant_id(tenant_id)}.nekazari.robotika.cloud"
+    """Generate the n8n URL for a tenant (path-based under nekazari.robotika.cloud)."""
+    safe = sanitize_tenant_id(tenant_id)
+    return f"nekazari.robotika.cloud/n8n/{safe}"
