@@ -170,7 +170,7 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
                             image="n8nio/n8n:latest",
                             ports=[client.V1ContainerPort(container_port=5678)],
                             env=[
-                                client.V1EnvVar(name="N8N_HOST", value="nekazari.robotika.cloud"),
+                                client.V1EnvVar(name="N8N_HOST", value="n8n.robotika.cloud"),
                                 client.V1EnvVar(name="N8N_PROTOCOL", value="https"),
                                 client.V1EnvVar(name="N8N_PATH_PREFIX", value=path_prefix),
                                 client.V1EnvVar(name="WEBHOOK_URL", value=f"https://{host}/"),
