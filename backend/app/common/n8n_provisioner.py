@@ -109,32 +109,44 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
     host = n8n_host(tenant_id)
     creds = generate_credentials()
 
-    # 1. Create Secret
-    secret = client.V1Secret(
-        api_version="v1",
-        kind="Secret",
-        metadata=client.V1ObjectMeta(name=f"{name}-secret", namespace="nekazari"),
-        string_data={
-            "username": creds["username"],
-            "password": creds["password"],
-            "api-key": creds["api_key"],
-        },
-    )
-    core_v1.create_namespaced_secret("nekazari", secret)
+    # 1. Create Secret (idempotent — skip if already exists from partial provision)
+    try:
+        secret = client.V1Secret(
+            api_version="v1",
+            kind="Secret",
+            metadata=client.V1ObjectMeta(name=f"{name}-secret", namespace="nekazari"),
+            string_data={
+                "username": creds["username"],
+                "password": creds["password"],
+                "api-key": creds["api_key"],
+            },
+        )
+        core_v1.create_namespaced_secret("nekazari", secret)
+    except client.ApiException as e:
+        if e.status == 409:
+            logger.info(f"Secret {name}-secret already exists, reusing")
+        else:
+            raise
 
-    # 2. Create PVC
-    pvc = client.V1PersistentVolumeClaim(
-        api_version="v1",
-        kind="PersistentVolumeClaim",
-        metadata=client.V1ObjectMeta(name=f"{name}-workflows", namespace="nekazari"),
-        spec=client.V1PersistentVolumeClaimSpec(
-            access_modes=["ReadWriteOnce"],
-            resources=client.V1ResourceRequirements(
-                requests={"storage": "10Gi"}
+    # 2. Create PVC (idempotent)
+    try:
+        pvc = client.V1PersistentVolumeClaim(
+            api_version="v1",
+            kind="PersistentVolumeClaim",
+            metadata=client.V1ObjectMeta(name=f"{name}-workflows", namespace="nekazari"),
+            spec=client.V1PersistentVolumeClaimSpec(
+                access_modes=["ReadWriteOnce"],
+                resources=client.V1ResourceRequirements(
+                    requests={"storage": "10Gi"}
+                ),
             ),
-        ),
-    )
-    core_v1.create_namespaced_persistent_volume_claim("nekazari", pvc)
+        )
+        core_v1.create_namespaced_persistent_volume_claim("nekazari", pvc)
+    except client.ApiException as e:
+        if e.status == 409:
+            logger.info(f"PVC {name}-workflows already exists, reusing")
+        else:
+            raise
 
     # 3. Create Deployment
     deployment = client.V1Deployment(
@@ -219,9 +231,16 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
             ),
         ),
     )
-    apps_v1.create_namespaced_deployment("nekazari", deployment)
+    try:
+        apps_v1.create_namespaced_deployment("nekazari", deployment)
+    except client.ApiException as e:
+        if e.status == 409:
+            logger.info(f"Deployment {name} already exists, updating")
+            apps_v1.patch_namespaced_deployment(name, "nekazari", deployment)
+        else:
+            raise
 
-    # 4. Create Service
+    # 4. Create Service (idempotent)
     service = client.V1Service(
         api_version="v1",
         kind="Service",
@@ -231,9 +250,15 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
             ports=[client.V1ServicePort(port=5678, target_port=5678)],
         ),
     )
-    core_v1.create_namespaced_service("nekazari", service)
+    try:
+        core_v1.create_namespaced_service("nekazari", service)
+    except client.ApiException as e:
+        if e.status == 409:
+            logger.info(f"Service {name}-service already exists, reusing")
+        else:
+            raise
 
-    # 5. Create Ingress
+    # 5. Create Ingress (idempotent)
     ingress = client.V1Ingress(
         api_version="networking.k8s.io/v1",
         kind="Ingress",
@@ -274,9 +299,15 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
             ],
         ),
     )
-    net_v1.create_namespaced_ingress("nekazari", ingress)
+    try:
+        net_v1.create_namespaced_ingress("nekazari", ingress)
+    except client.ApiException as e:
+        if e.status == 409:
+            logger.info(f"Ingress {name}-ingress already exists, reusing")
+        else:
+            raise
 
-    # 6. Create HPA
+    # 6. Create HPA (idempotent)
     hpa = client.V1HorizontalPodAutoscaler(
         api_version="autoscaling/v1",
         kind="HorizontalPodAutoscaler",
@@ -292,7 +323,13 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
             target_cpu_utilization_percentage=70,
         ),
     )
-    auto_v1.create_namespaced_horizontal_pod_autoscaler("nekazari", hpa)
+    try:
+        auto_v1.create_namespaced_horizontal_pod_autoscaler("nekazari", hpa)
+    except client.ApiException as e:
+        if e.status == 409:
+            logger.info(f"HPA {name}-hpa already exists, reusing")
+        else:
+            raise
 
     # 7. Create database
     create_n8n_tenant_db(tenant_id)
