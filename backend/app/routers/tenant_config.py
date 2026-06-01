@@ -66,6 +66,7 @@ class ProvisionStatusResponse(BaseModel):
     status: str  # "none" | "in_progress" | "active" | "suspended" | "grace_period" | "error"
     n8n_url: str | None = None
     username: str | None = None
+    password: str | None = None
     suspended_at: str | None = None
     days_remaining: int | None = None
     is_enterprise: bool = False
@@ -252,10 +253,20 @@ async def get_provision_status(
         except (ValueError, AttributeError):
             pass
 
+    # Decrypt password if available
+    password = None
+    encrypted_pw = config.get("n8n_admin_password_encrypted")
+    if encrypted_pw:
+        try:
+            password = decrypt_token(encrypted_pw)
+        except Exception:
+            password = None
+
     return ProvisionStatusResponse(
         status=status_val,
         n8n_url=config.get("n8n_url"),
         username=config.get("n8n_admin_username"),
+        password=password,
         suspended_at=str(suspended_at) if suspended_at else None,
         days_remaining=days_remaining,
         is_enterprise=config.get("stripe_subscription_id") is None and status_val == "active",

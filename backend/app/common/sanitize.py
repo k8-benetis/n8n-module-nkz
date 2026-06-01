@@ -25,6 +25,6 @@ def n8n_db_name(tenant_id: str) -> str:
 
 
 def n8n_host(tenant_id: str) -> str:
-    """Generate the n8n URL for a tenant (path-based under n8n.robotika.cloud)."""
+    """Generate the n8n URL for a tenant (subdomain-based: <tenant>.n8n.robotika.cloud)."""
     safe = sanitize_tenant_id(tenant_id)
-    return f"n8n.robotika.cloud/n8n/{safe}"
+    return f"{safe}.n8n.robotika.cloud"

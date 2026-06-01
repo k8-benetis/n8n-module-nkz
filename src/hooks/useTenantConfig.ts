@@ -12,6 +12,7 @@ interface ProvisionStatus {
   status: "none" | "in_progress" | "active" | "suspended" | "grace_period" | "error";
   n8n_url: string | null;
   username: string | null;
+  password: string | null;
   suspended_at: string | null;
   days_remaining: number | null;
   is_enterprise: boolean;
@@ -27,7 +28,7 @@ export function useTenantConfig() {
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string | null; latency_ms: number | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [provisionStatus, setProvisionStatus] = useState<ProvisionStatus>({
-    status: "none", n8n_url: null, username: null,
+    status: "none", n8n_url: null, username: null, password: null,
     suspended_at: null, days_remaining: null, is_enterprise: false,
   });
   const [isProvisioning, setIsProvisioning] = useState(false);

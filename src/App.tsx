@@ -339,6 +339,16 @@ const ModuleApp: React.FC = () => {
                       </code>
                     </div>
                   )}
+                  {provisionStatus.password && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Password
+                      </label>
+                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        {provisionStatus.password}
+                      </code>
+                    </div>
+                  )}
                   <button
                     onClick={cancelSubscription}
                     className="px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg"
