@@ -167,7 +167,7 @@ def provision_n8n_tenant(tenant_id: str) -> dict:
                     containers=[
                         client.V1Container(
                             name="n8n",
-                            image="n8nio/n8n:latest",
+                            image="n8nio/n8n@sha256:c0c39b1ca69d43f736bc65f8ddd70972a8989f736e8a4b6a075823f98cc48a23",
                             ports=[client.V1ContainerPort(container_port=5678)],
                             env=[
                                 client.V1EnvVar(name="N8N_HOST", value="n8n.robotika.cloud"),
