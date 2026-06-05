@@ -35,7 +35,7 @@ spec:
       serviceAccountName: n8n-provisioner
       containers:
         - name: backend
-          image: ghcr.io/nkz-os/n8n-module-nkz/n8n-nkz-backend@sha256:61768544c088655dcdbb92d6da34721b4527eaa84c1525ab25020db276ed1069
+          image: ghcr.io/nkz-os/n8n-module-nkz/n8n-nkz-backend:main
           imagePullPolicy: Always
           ports:
             - name: http
