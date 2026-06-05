@@ -10,6 +10,7 @@ import httpx
 from app.config import get_settings, Settings
 from app.middleware import get_current_user, get_tenant_id, require_roles, TokenPayload
 from app.common.tenant_config_service import get_tenant_config
+from app.common.sanitize import sanitize_tenant_id
 from app.common.fernet_crypto import decrypt_token
 
 router = APIRouter(prefix="/n8n")
@@ -73,7 +74,10 @@ async def n8n_request(
             detail="n8n not configured for this tenant. Admin must set URL + API key in module settings.",
         )
 
-    url = f"{config['n8n_url'].rstrip('/')}/api/v1{path}"
+    # Use internal K8s service DNS for backend-to-backend calls
+    # (avoids hairpin NAT — pods cannot reach external n8n.robotika.cloud)
+    internal_url = f"http://n8n-{sanitize_tenant_id(tenant_id)}-service:5678"
+    url = f"{internal_url}/api/v1{path}"
     api_key = ""
     if config.get("n8n_api_key_encrypted"):
         api_key = decrypt_token(config["n8n_api_key_encrypted"])
