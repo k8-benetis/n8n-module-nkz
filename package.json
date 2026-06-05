@@ -4,6 +4,7 @@
   "description": "n8n Integration Hub - Workflow orchestration module for Nekazari Platform",
   "license": "AGPL-3.0",
   "type": "module",
+  "packageManager": "pnpm@9.4.0",
   "main": "./src/Module.tsx",
   "nkz": {
     "moduleId": "n8n-nkz"
