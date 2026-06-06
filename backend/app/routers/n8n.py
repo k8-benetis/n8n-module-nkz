@@ -76,7 +76,12 @@ async def n8n_request(
 
     # Use internal K8s service DNS for backend-to-backend calls
     # (avoids hairpin NAT — pods cannot reach external n8n.robotika.cloud)
-    internal_url = f"http://n8n-{sanitize_tenant_id(tenant_id)}-service:5678"
+    # Extract path prefix from n8n_url (e.g. /montiko/) — n8n with
+    # N8N_PATH_PREFIX serves the API under that prefix internally too.
+    from urllib.parse import urlparse
+    parsed = urlparse(config["n8n_url"])
+    path_prefix = parsed.path.rstrip("/") if parsed.path else ""
+    internal_url = f"http://n8n-{sanitize_tenant_id(tenant_id)}-service:5678{path_prefix}"
     url = f"{internal_url}/api/v1{path}"
     api_key = ""
     if config.get("n8n_api_key_encrypted"):
