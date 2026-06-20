@@ -22,6 +22,7 @@ from app.routers import (
     tenant_config,
     internal_n8n,
 )
+from app.routers.webhooks import init_alert_subscriptions
 from app.common.n8n_suspension_manager import start_scheduler
 
 
@@ -38,6 +39,11 @@ async def lifespan(app: FastAPI):
 
     scheduler = start_scheduler()
     print(f"   Scheduler: n8n grace period check every 24h")
+
+    # Bootstrap Alert subscriptions for n8n-enabled tenants
+    print(f"   Bootstrapping Alert subscriptions...")
+    init_alert_subscriptions()
+    print(f"   Alert subscription bootstrap complete")
 
     yield
 
