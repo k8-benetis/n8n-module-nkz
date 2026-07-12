@@ -80,7 +80,7 @@
     "suspendedTitle": "Instancia suspendida",
     "suspendedDesc": "Por impago. Reactiva tu suscripcion para restaurarla.",
     "gracePeriodTitle": "Instancia pendiente de eliminacion",
-    "gracePeriodDesc": "Se eliminara en {days} dias. Reactiva antes del {date} para conservar tus workflows.",
+    "gracePeriodDesc": "Se eliminara en {{days}} dias. Reactiva antes del {{date}} para conservar tus workflows.",
     "errorProvisioning": "Error al provisionar",
     "retry": "Reintentar",
     "passwordCopied": "Contrasena copiada"

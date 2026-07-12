@@ -385,8 +385,10 @@ const ModuleApp: React.FC = () => {
                     <div>
                       <p className="text-sm font-medium">{t('settings.gracePeriodTitle')}</p>
                       <p className="text-xs">
-                        {t('settings.gracePeriodDesc')
-                          .replace('{days}', String(provisionStatus.days_remaining || 0))}
+                        {t('settings.gracePeriodDesc', {
+                          days: provisionStatus.days_remaining || 0,
+                          date: new Date(Date.now() + (provisionStatus.days_remaining || 0) * 86400000).toLocaleDateString(),
+                        })}
                       </p>
                     </div>
                   </div>

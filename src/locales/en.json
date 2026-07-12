@@ -80,7 +80,7 @@
     "suspendedTitle": "Instance suspended",
     "suspendedDesc": "Due to unpaid invoice. Reactivate your subscription to restore it.",
     "gracePeriodTitle": "Instance pending deletion",
-    "gracePeriodDesc": "Will be deleted in {days} days. Reactivate before {date} to keep your workflows.",
+    "gracePeriodDesc": "Will be deleted in {{days}} days. Reactivate before {{date}} to keep your workflows.",
     "errorProvisioning": "Provisioning error",
     "retry": "Retry",
     "passwordCopied": "Password copied"
